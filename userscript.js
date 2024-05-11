@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFS FMS
-// @version      v0.2 alpha
+// @version      v0.3 alpha
 // @description  Flight management system
 // @author       TurboMaximus
 // @icon         https://www.geo-fs.com/favicon.ico
@@ -20,7 +20,8 @@
         }
 
         geofs.api.map.flightPath._lineMarkers.forEach((m,i) => {
-            m._icon.style.backgroundColor = (i == window.routePos) && (Math.floor(new Date()/1000)%2) ? 'red' : (i < window.routePos ? 'grey':'white');
+            m._icon.style.backgroundColor = (i == window.routePos) && (Math.floor(new Date()/1000)%2) ?
+                'red' : (i < window.routePos ? 'grey' : 'white');
             if (i == window.routePos && !m._gpsFix)
                 m._gpsFix = geofs.nav.addGPSFIX([m._latlng.lat,m._latlng.lng]);
 
@@ -32,31 +33,30 @@
         let nextWpLatLng = [nextWP._latlng.lat,nextWP._latlng.lng];
         const coords = geofs.aircraft.instance.getCurrentCoordinates();
         const dstToWaypoint = geofs.utils.distanceBetweenLocations(coords, nextWpLatLng);
-        if (dstToWaypoint < (geofs.aircraft.instance.trueAirSpeed*30)) {
+        // random magic number, works for now overshoots alot tho
+        const turnDist = (geofs.aircraft.instance.trueAirSpeed*30);
+        if (dstToWaypoint < turnDist) {
             window.routePos++;
             if (nextWP._gpsFix && nextWP._gpsFix.type=='FIX')
                 geofs.nav.removeNavaid(nextWP._gpsFix.id);
 
             nextWP = geofs.api.map.flightPath._lineMarkers[window.routePos];
-            if (nextWP) {
-                const lastWpLatLng = nextWpLatLng;
-                nextWpLatLng = [nextWP._latlng.lat,nextWP._latlng.lng];
-                if (!nextWP._gpsFix) {
-                    nextWP._gpsFix = getClosestNavaid([nextWP._latlng.lat,nextWP._latlng.lng]);
-                    if (!nextWP._gpsFix)
-                        nextWP._gpsFix = geofs.nav.addGPSFIX([nextWP._latlng.lat,nextWP._latlng.lng]);
-                }
-                geofs.nav.selectNavaid(nextWP._gpsFix.id);
-                if (geofs.utils.distanceBetweenLocations(lastWpLatLng, nextWpLatLng) > (geofs.aircraft.instance.trueAirSpeed*30))
-                    geofs.nav.setOBS('GPS', Math.round(geofs.utils.bearingBetweenLocations(lastWpLatLng, nextWpLatLng)),0,true);
-
-                geofs.autopilot.setMode('NAV');
-            } else {
+            if (!nextWP) {
                 geofs.autopilot.setMode('HDG');
+                return;
             }
-        }
-        console.log('dist',Math.round(dstToWaypoint));
+            const lastWpLatLng = nextWpLatLng;
+            nextWpLatLng = [nextWP._latlng.lat,nextWP._latlng.lng];
+            if (!nextWP._gpsFix)
+                nextWP._gpsFix = getClosestNavaid([nextWP._latlng.lat,nextWP._latlng.lng]);
+            if (!nextWP._gpsFix)
+                nextWP._gpsFix = geofs.nav.addGPSFIX([nextWP._latlng.lat,nextWP._latlng.lng]);
+            geofs.nav.selectNavaid(nextWP._gpsFix.id);
+            if (geofs.utils.distanceBetweenLocations(lastWpLatLng, nextWpLatLng) > turnDist)
+                geofs.nav.setOBS('GPS', Math.round(geofs.utils.bearingBetweenLocations(lastWpLatLng, nextWpLatLng)),0,true);
 
+            geofs.autopilot.setMode('NAV');
+        }
     }, 1000);
 
     function getClosestNavaid(pos, range=5000) {
@@ -72,7 +72,8 @@
             return nearest[1];
         });
         for (let i=0; i < geofs.nav.navaids.length; i++) {
-            if (geofs.nav.navaids[i] && geofs.utils.distanceBetweenLocations(pos, [geofs.nav.navaids[i].lat,geofs.nav.navaids[i].lon]) < range)
+            if (geofs.nav.navaids[i] &&
+                geofs.utils.distanceBetweenLocations(pos, [geofs.nav.navaids[i].lat,geofs.nav.navaids[i].lon]) < range)
                 return geofs.nav.navaids[i];
         }
     }

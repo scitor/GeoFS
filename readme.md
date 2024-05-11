@@ -2,7 +2,8 @@
 
 A very basic FMS for GeoFS using native flight paths for autopilot GPS/VOR/ILS navigation.
 
-- [demo vid](https://youtu.be/1d1XBDeL_Sc)
+- [alpha demo](https://youtu.be/1d1XBDeL_Sc)
+- [fmc route import](https://youtu.be/UpVoFMS6Ouw)
 
 ## features (alpha preview)
 
