@@ -42,6 +42,8 @@
 
             nextWP = geofs.api.map.flightPath._lineMarkers[window.routePos];
             if (!nextWP) {
+                beep(20,660,50);
+                setTimeout(()=>{beep(20,480,50)},50);
                 geofs.autopilot.setMode('HDG');
                 return;
             }
@@ -59,10 +61,10 @@
         }
     }, 1000);
 
-    function getClosestNavaid(pos, range=5000) {
+    function getClosestNavaid(pos, range=1000, type='ILS') {
         var nearest = [Infinity,null];
         return geofs.nav.navaids.reduce((p,c) => {
-            if (!c)
+            if (!c || c.type!=type)
                 return p;
 
             const dist = geofs.utils.distanceBetweenLocations(pos, [c.lat,c.lon]);
@@ -90,6 +92,18 @@
             },[]));
             geofs.api.map.stopCreatePath();
         }
+    }
+    var audioContext = AudioContext && new AudioContext();
+    function beep(amp, freq, ms){//amp:0..100, freq in Hz, ms
+        if (!audioContext) return;
+        var osc = audioContext.createOscillator();
+        var gain = audioContext.createGain();
+        osc.connect(gain);
+        osc.frequency.value = freq;
+        gain.connect(audioContext.destination);
+        gain.gain.value = amp/100;
+        osc.start(audioContext.currentTime);
+        osc.stop(audioContext.currentTime+ms/1000);
     }
     setTimeout(() => {
         const importButton = $('<input type="button" value="FMC import" style="width: 120px;border: 2px solid #bbb;">');
