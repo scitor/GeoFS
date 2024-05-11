@@ -91,31 +91,39 @@
         }
     }
     setTimeout(() => {
-        const fmcImportInput = $('<textarea style="width: 100%;height:100%;border: 2px solid #bbb;"></textarea>');
         const importButton = $('<input type="button" value="FMC import" style="width: 120px;border: 2px solid #bbb;">');
         let popup;
         importButton.on('click', (e) => {
             popup = window.open('about:blank',  null, 'width=300,height=200,toolbar=0,location=0,status=1,scrollbars=1,resizable=1');
+            const fmcImportInput = $('<textarea style="width: 100%;height:100%;border: 2px solid #bbb;"></textarea>');
             popup.document.body.appendChild(fmcImportInput[0]);
             popup.document.head.appendChild($('<title>GeoFS - FMC import</title>')[0]);
-        });
-        fmcImportInput.on('change keyup', (e) => {
-            try{
-                importFmcRoute(JSON.parse(fmcImportInput.val()));
-                fmcImportInput.val('');
-                popup.close();
-            } catch (error) {
-                popup.document.head.title = 'Error: '+error;
-            }
+            fmcImportInput.on('change keyup', (e) => {
+                try{
+                    importFmcRoute(JSON.parse(fmcImportInput.val()));
+                    fmcImportInput.val('');
+                    popup.close();
+                } catch (error) {
+                    popup.document.head.title = 'Error: '+error;
+                }
+            });
         });
 
         const importDiv = $('<div style="position:absolute;top: 48px;left:55px;"></div>');
         importDiv.append(importButton);
         $('div.geofs-clearPath').parent().append(importDiv);
 
-        document.querySelector('input.geofs-autopilot-speed').onwheel = e => { geofs.autopilot.setSpeed(parseInt(e.target.value) + e.deltaY/(e.shiftKey ? -100 : -10)); };
-        document.querySelector('input.geofs-autopilot-course').onwheel = e => { geofs.autopilot.setCourse(parseInt(e.target.value) + e.deltaY/(e.shiftKey ? -100 : -10)); };
-        document.querySelector('input.geofs-autopilot-altitude').onwheel = e => {geofs.autopilot.setAltitude(parseInt(e.target.value) + e.deltaY/(e.shiftKey ? -10 : -1)); };
-        document.querySelector('input.geofs-autopilot-verticalSpeed').onwheel = e => { geofs.autopilot.setVerticalSpeed(parseInt(e.target.value) + e.deltaY/(e.shiftKey ? -10 : -1)); };
+        document.querySelector('input.geofs-autopilot-speed').onwheel = e => {
+            geofs.autopilot.setSpeed(parseInt(e.target.value) + e.deltaY/(e.shiftKey ? -100 : -10));
+        };
+        document.querySelector('input.geofs-autopilot-course').onwheel = e => {
+            geofs.autopilot.setCourse(parseInt(e.target.value) + e.deltaY/(e.shiftKey ? -100 : -10));
+        };
+        document.querySelector('input.geofs-autopilot-altitude').onwheel = e => {
+            geofs.autopilot.setAltitude(parseInt(e.target.value) + e.deltaY/(e.shiftKey ? -10 : -1));
+        };
+        document.querySelector('input.geofs-autopilot-verticalSpeed').onwheel = e => {
+            geofs.autopilot.setVerticalSpeed(parseInt(e.target.value) + e.deltaY/(e.shiftKey ? -10 : -1));
+        };
     }, 1000);
 })();
