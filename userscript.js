@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFMS - FMS for GeoFS
-// @version      v0.4 alpha
+// @version      v0.4.1 alpha
 // @description  Flight management system for GeoFS
 // @author       TurboMaximus
 // @icon         https://www.geo-fs.com/favicon.ico
@@ -34,15 +34,13 @@
         const coords = geofs.aircraft.instance.getCurrentCoordinates();
         const dstToWaypoint = geofs.utils.distanceBetweenLocations(coords, nextWpLatLng);
         // random magic number, works for now overshoots alot tho
-        const turnDist = Math.pow(geofs.aircraft.instance.trueAirSpeed,2) / (11.26*Math.tan((30 * Math.PI) / 180));
+        const turnDist = Math.pow(geofs.aircraft.instance.trueAirSpeed, 2) / (11.26*Math.tan((30 * Math.PI) / 180));
         if (dstToWaypoint > turnDist)
             return;
 
         nextWP._visited = true;
         let newWP = getNextWaypoint();
         if (!newWP) {
-
-            console.log(nextWP);
             if (nextWP._gpsFix.type == 'ILS') {
                 beep(10,660,200);
                 return;
@@ -88,7 +86,7 @@
                     geofs.nav.removeNavaid(m._gpsFix.id);
                     delete m._gpsFix;
                 } else {
-
+                    m._gpsFix.marker.update(m._latlng.lat,m._latlng.lng);
                 }
             }
             if (!m._visited && active)
