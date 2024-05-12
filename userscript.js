@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFMS - FMS for GeoFS
-// @version      v0.4.1 alpha
+// @version      v0.4.2 alpha
 // @description  Flight management system for GeoFS
 // @author       TurboMaximus
 // @icon         https://www.geo-fs.com/favicon.ico
@@ -33,13 +33,17 @@
 
         const coords = geofs.aircraft.instance.getCurrentCoordinates();
         const dstToWaypoint = geofs.utils.distanceBetweenLocations(coords, nextWpLatLng);
-        // random magic number, works for now overshoots alot tho
-        const turnDist = Math.pow(geofs.aircraft.instance.trueAirSpeed, 2) / (11.26*Math.tan((30 * Math.PI) / 180));
+        let turnDist = Math.pow(geofs.aircraft.instance.trueAirSpeed, 2) / (11.26*Math.tan((30 * Math.PI) / 180));
+        let newWP = getNextWaypoint(1);
+        if (newWP) {
+            const curBrg = geofs.nav.currentNAVUnit.course;
+            const newBrg = geofs.utils.bearingBetweenLocations(nextWpLatLng, [newWP._latlng.lat,newWP._latlng.lng]);
+            turnDist *= Math.abs((Math.abs(newBrg-curBrg)+180)%360-180) / 90;
+        }
         if (dstToWaypoint > turnDist)
             return;
 
         nextWP._visited = true;
-        let newWP = getNextWaypoint();
         if (!newWP) {
             if (nextWP._gpsFix.type == 'ILS') {
                 beep(10,660,200);
@@ -71,8 +75,8 @@
         return getClosestNavaid(latLng) || geofs.nav.addNavaid(geofs.nav.generateGPSFIXNavaid(latLng,null,name));
     }
 
-    function getNextWaypoint() {
-        return geofs.api.map.flightPath._lineMarkers.find(c => !c._visited);
+    function getNextWaypoint(skip=0) {
+        return geofs.api.map.flightPath._lineMarkers.find(c => !c._visited && !(skip--));
     }
 
     function handleFlightpathMarkers() {
