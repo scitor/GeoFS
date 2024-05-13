@@ -38,7 +38,7 @@
         if (newWP) {
             const curBrg = geofs.nav.currentNAVUnit.course;
             const newBrg = geofs.utils.bearingBetweenLocations(nextWpLatLng, [newWP._latlng.lat,newWP._latlng.lng]);
-            turnDist *= Math.abs((Math.abs(newBrg-curBrg)+180)%360-180) / 90;
+            turnDist *= Math.max(30, Math.abs((Math.abs(newBrg-curBrg)+180)%360-180)) / 90;
         }
         if (dstToWaypoint > turnDist)
             return;
