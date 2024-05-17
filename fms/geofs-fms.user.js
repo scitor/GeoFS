@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         GeoFMS - Native flight path autopilot
-// @version      v0.4.4 alpha
+// @version      v0.4.5 alpha
 // @description  Simple autopilot extension to follow flight paths on the map
 // @author       TurboMaximus
 // @icon         https://www.geo-fs.com/favicon.ico
 // @match        https://www.geo-fs.com/geofs.php
-// @downloadURL  https://raw.githubusercontent.com/scitor/GeoFS/master/fms/geofs-fms.user.js
+// @downloadURL  https://github.com/scitor/GeoFS/raw/master/fms/geofs-fms.user.js
 // @grant        none
 // ==/UserScript==
 

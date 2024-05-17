@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         GeoFS UI tweaks
-// @version      1.0.1
+// @version      1.0.2
 // @description  Adds various tweaks to the GeoFS UI
 // @author       TurboMaximus
 // @match        https://www.geo-fs.com/geofs.php
 // @icon         https://www.geo-fs.com/favicon.ico
-// @downloadURL  https://raw.githubusercontent.com/scitor/GeoFS/master/uiTweaks/geofs-ui-tweaks.user.js
+// @downloadURL  https://github.com/scitor/GeoFS/raw/master/uiTweaks/geofs-ui-tweaks.user.js
 // @run-at       document-end
 // @grant        none
 // ==/UserScript==
@@ -43,6 +43,6 @@ const POPOUT_CHAT = true; // adds ability to popout chat into new window
             popoutChatWindow.document.head.append($('<style>.geofs-chat-message{opacity:1!important;font-family:sans-serif;}</style>')[0]);
             popoutChatWindow.onbeforeunload = () => chatParentDiv.append(chatDiv);
         };
-        window.onbeforeunload = () => popoutChatWindow.close();
+        window.onbeforeunload = () => popoutChatWindow && popoutChatWindow.close();
     }
 })();
