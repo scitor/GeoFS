@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         GeoFMS - Native flight path autopilot
-// @version      v0.4.5 alpha
+// @version      0.4.6
 // @description  Simple autopilot extension to follow flight paths on the map
 // @author       TurboMaximus
+// @match        https://*/geofs.php*
 // @icon         https://www.geo-fs.com/favicon.ico
-// @match        https://www.geo-fs.com/geofs.php
 // @downloadURL  https://github.com/scitor/GeoFS/raw/master/fms/geofs-fms.user.js
 // @grant        none
 // ==/UserScript==
@@ -184,7 +184,7 @@ const USE_SOUNDS = true;
         appendNewChild(importDiv,'input',{type:'button', value:'FMC export', style:"width: 120px;border: 2px solid #bbb;"}).onclick = exportFmcRoute;
         let popup;
         importButton.onclick = e => {
-            popup = window.open('about:blank',  '_blank', 'popup=1,width=300,height=200');
+            popup = window.open('about:blank', '_blank', 'popup=1,width=300,height=200');
             popup.document.head.appendChild(createTag('title',{},'GeoFS - FMC import'));
             const fmcImportInput = appendNewChild(popup.document.body,'textarea',{style:"width: 100%;height:100%;border: 2px solid #bbb;"});
             fmcImportInput.onkeyup = e => {
