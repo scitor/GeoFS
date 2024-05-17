@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFMS - Native flight path autopilot
-// @version      v0.4.3 alpha
+// @version      v0.4.4 alpha
 // @description  Simple autopilot extension to follow flight paths on the map
 // @author       TurboMaximus
 // @icon         https://www.geo-fs.com/favicon.ico
@@ -148,6 +148,17 @@ const USE_SOUNDS = true;
             });
         }
     }
+    function exportFmcRoute() {
+        if (!geofs.api.map.flightPath) return;
+        const jsonString = JSON.stringify(["","","",geofs.api.map.flightPath._latlngs.map((p,i) => ["WP"+i,p.lat,p.lng,null,false,null])],
+            (key, value) => (typeof value === 'number') ? parseFloat(value.toFixed(6)) : value
+        );
+        navigator.clipboard.writeText(jsonString).then(() => {
+            const oldVal = this.value;
+            this.value = "copied...";
+            setTimeout(()=>{this.value = oldVal}, 3000);
+        });
+    }
     const audioContext = AudioContext && new AudioContext();
     //amp:0..100, [[freq in Hz, ms],..] (https://stackoverflow.com/a/74914407)
     function beep(amp, seq) {
@@ -168,26 +179,26 @@ const USE_SOUNDS = true;
             setTimeout(()=>{beep(amp,seq)},el[1]);
     }
     setTimeout(() => {
-        const importButton = $('<input type="button" value="FMC import" style="width: 120px;border: 2px solid #bbb;">');
+        const importDiv = appendNewChild(document.querySelector('div.geofs-clearPath').parentNode,'div',{style:"position:absolute;top: 48px;left:55px;"});
+        const importButton = appendNewChild(importDiv,'input',{type:"button", value:"FMC import", style:"width: 120px;border: 2px solid #bbb;"});
+        appendNewChild(importDiv,'input',{type:'button', value:'FMC export', style:"width: 120px;border: 2px solid #bbb;"}).onclick = exportFmcRoute;
         let popup;
-        importButton.on('click', (e) => {
+        importButton.onclick = e => {
             popup = window.open('about:blank',  '_blank', 'popup=1,width=300,height=200');
-            const fmcImportInput = $('<textarea style="width: 100%;height:100%;border: 2px solid #bbb;"></textarea>');
-            popup.document.body.appendChild(fmcImportInput[0]);
-            popup.document.head.appendChild($('<title>GeoFS - FMC import</title>')[0]);
-            fmcImportInput.on('change keyup', (e) => {
+            popup.document.head.appendChild(createTag('title',{},'GeoFS - FMC import'));
+            const fmcImportInput = appendNewChild(popup.document.body,'textarea',{style:"width: 100%;height:100%;border: 2px solid #bbb;"});
+            fmcImportInput.onkeyup = e => {
                 try{
-                    importFmcRoute(JSON.parse(fmcImportInput.val()));
-                    fmcImportInput.val('');
+                    importFmcRoute(JSON.parse(fmcImportInput.value));
+                    fmcImportInput.value='';
                     popup.close();
                 } catch (error) {
                     popup.document.head.title = 'Error: '+error.message;
                 }
-            });
-        });
-
-        const importDiv = $('<div style="position:absolute;top: 48px;left:55px;"></div>');
-        importDiv.append(importButton);
-        $('div.geofs-clearPath').parent().append(importDiv);
+            };
+        };
     }, 1000);
+
+    function createTag(e,t={},n){const r=document.createElement(e);return Object.keys(t).forEach(e=>r.setAttribute(e,t[e])),n&&(r.innerHTML=n),r}
+    function appendNewChild(e,t,n={},r=-1){n=createTag(t,n);return r<0?e.appendChild(n):e.insertBefore(n,e.children[r]),n}
 })();

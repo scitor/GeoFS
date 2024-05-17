@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFS UI tweaks
-// @version      1.0
+// @version      1.0.1
 // @description  Adds various tweaks to the GeoFS UI
 // @author       TurboMaximus
 // @match        https://www.geo-fs.com/geofs.php
@@ -20,19 +20,16 @@ const POPOUT_CHAT = true; // adds ability to popout chat into new window
         return setTimeout(init, 1000);
 
     if (MOUSEWHEEL_TWEAKS) {
-        document.querySelector('input.geofs-autopilot-speed').onwheel = function(event){
+        document.querySelector('input.geofs-autopilot-speed').onwheel = (event) =>
             geofs.autopilot.setSpeed(parseInt(event.target.value) + event.deltaY/(event.shiftKey ? -100 : -10));
-        }
-        document.querySelector('input.geofs-autopilot-course').onwheel = function(event){
+        document.querySelector('input.geofs-autopilot-course').onwheel = (event) =>
             geofs.autopilot.setCourse(parseInt(event.target.value) + event.deltaY/(event.shiftKey ? -100 : -10));
-        }
-        document.querySelector('input.geofs-autopilot-altitude').onwheel = function(event){
+        document.querySelector('input.geofs-autopilot-altitude').onwheel = (event) =>
             geofs.autopilot.setAltitude(parseInt(event.target.value) + event.deltaY/(event.shiftKey ? -10 : -1));
-        }
-        document.querySelector('input.geofs-autopilot-verticalSpeed').onwheel = function(event){
+        document.querySelector('input.geofs-autopilot-verticalSpeed').onwheel = (event) =>
             geofs.autopilot.setVerticalSpeed(parseInt(event.target.value) + event.deltaY/(event.shiftKey ? -10 : -1));
-        }
     }
+
     if (POPOUT_CHAT) {
         const popoutChatBtn = $('<button class="mdl-button mdl-js-button mdl-button--icon" tabindex="0"><i class="material-icons">text_fields</i></button>')[0];
         document.querySelectorAll('.geofs-button-mute').forEach(m=>m.parentNode.appendChild(popoutChatBtn));

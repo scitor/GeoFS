@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFS Flight Recorder Tapedeck
-// @version      1.0
+// @version      1.0.1
 // @description  Adds ability to load / save flight recorder "tapes"
 // @author       TurboMaximus
 // @match        https://www.geo-fs.com/geofs.php
@@ -17,8 +17,8 @@
         return setTimeout(init, 1000);
     }
 
-    $('.geofs-f-recordPlayer.geofs-slider-container')[0].style.left = '420px';
-    const btnBox = $('.geofs-f-recordPlayer > .geofs-ui-bottom-box')[0];
+    document.querySelector('.geofs-f-recordPlayer.geofs-slider-container').style.left = '420px';
+    const btnBox = document.querySelector('.geofs-f-recordPlayer > .geofs-ui-bottom-box');
     const tapeSaveBtn = appendNewChild(btnBox, 'button', {
         class: 'mdl-button mdl-js-button mdl-button--icon',
         title: 'Save current Flight Recorder Tape'
@@ -28,9 +28,8 @@
         if (!flight.recorder.tape.length) {
             return;
         }
-        const tape = [...flight.recorder.tape];
         const jsonString = JSON.stringify(
-            compressTape(flight.recorder.tape),
+            compressTape([...flight.recorder.tape]),
             (key, value) => (typeof value === 'number') ? parseFloat(value.toFixed(6)) : value
         );
         const dataJson = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonString);
@@ -85,19 +84,7 @@
         });
     }
 
-    function createTag(name, attributes = {}) {
-        const el = document.createElement(name);
-        Object.keys(attributes).forEach(k => el.setAttribute(k, attributes[k]));
-        return el;
-    }
+    function createTag(e,t={}){const n=document.createElement(e);return Object.keys(t).forEach(e=>n.setAttribute(e,t[e])),n}
+    function appendNewChild(e,t,n={},r=-1){n=createTag(t,n);return r<0?e.appendChild(n):e.insertBefore(n,e.children[r]),n}
 
-    function appendNewChild(parent, tagName, attributes = {}, pos = -1) {
-        const child = createTag(tagName, attributes);
-        if (pos < 0) {
-            parent.appendChild(child);
-        } else {
-            parent.insertBefore(child, parent.children[pos]);
-        }
-        return child;
-    }
 })();
