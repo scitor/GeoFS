@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         GeoFS UI tweaks
-// @version      1.0.3
+// @version      1.0.4
 // @description  Adds various tweaks to the GeoFS UI
 // @author       TurboMaximus
 // @match        https://*/geofs.php*
-// @icon         https://www.geo-fs.com/favicon.ico
+// @icon         https://github.com/scitor/GeoFS/raw/master/uiTweaks/logo.png
 // @downloadURL  https://github.com/scitor/GeoFS/raw/master/uiTweaks/geofs-ui-tweaks.user.js
 // @run-at       document-end
 // @grant        none

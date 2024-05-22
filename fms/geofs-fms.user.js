@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         GeoFMS - Native flight path autopilot
-// @version      0.4.6
+// @version      0.4.8
 // @description  Simple autopilot extension to follow flight paths on the map
 // @author       TurboMaximus
 // @match        https://*/geofs.php*
-// @icon         https://www.geo-fs.com/favicon.ico
+// @icon         https://github.com/scitor/GeoFS/raw/master/fms/logo.png
 // @downloadURL  https://github.com/scitor/GeoFS/raw/master/fms/geofs-fms.user.js
 // @grant        none
 // ==/UserScript==
@@ -22,7 +22,7 @@ const USE_SOUNDS = true;
     geofs.fms = geofs.fms || {};
     geofs.fms.loopTrack = false;
     geofs.fms.interval = setInterval(() => {
-        if (!geofs.api.map.flightPath || !geofs.autopilot.on) {
+        if (!geofs || !geofs.api || !geofs.api.map || !geofs.api.map.flightPath || !geofs.autopilot.on) {
             return;
         }
         handleFlightpathMarkers();

@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         GeoFS Flight Recorder Tapedeck
-// @version      1.0.3
+// @version      1.0.4
 // @description  Adds ability to load / save flight recorder "tapes"
 // @author       TurboMaximus
 // @match        https://*/geofs.php*
-// @icon         https://www.geo-fs.com/favicon.ico
+// @icon         https://github.com/scitor/GeoFS/raw/master/tapedeck/logo.png
 // @downloadURL  https://github.com/scitor/GeoFS/raw/master/tapedeck/geofs-tapedeck.user.js
 // @run-at       document-end
 // @grant        none
