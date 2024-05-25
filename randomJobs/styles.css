@@ -1,0 +1,343 @@
+.geofs-ui-right .jobs-pad {
+    user-select: none;
+    -webkit-user-select: none;
+    width: 50px;
+    height: 80px;
+    border-radius: 40px;
+    outline: none;
+    position: absolute;
+    margin: -160px 0 160px 0;
+    text-orientation: upright;
+    writing-mode: vertical-rl;
+    letter-spacing: -2px;
+    line-height: 50px;
+
+    border: 1px solid #888;
+    background-color: #000;
+    box-shadow: 0 0 5px #000;
+    cursor: pointer;
+}
+
+.jobs-pad .blue-pad {
+    border-radius: 40px;
+}
+
+.jobs-pad .jobs-window {
+    width: 400px;
+    height: 600px;
+    writing-mode: initial;
+    letter-spacing: initial;
+    border-radius: 20px;
+    box-shadow: 0 0 5px #000;
+    border: 1px solid #888;
+    background-color: #000;
+    color: white;
+    position: absolute;
+    right: -500px;
+    top: -200px;
+    z-index: 100;
+    cursor: default;
+    transition: right .2s ease-in-out;
+}
+.jobs-window .jobs-title {
+    margin: 4px;
+    text-align: center;
+    font-size: 24px;
+    background-color: grey;
+    padding: 4px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    letter-spacing: -1px;
+    overflow: hidden;
+    height: 23px;
+}
+
+.jobs-window .jobs-header {
+    background: #404040;
+    margin: 0 4px 4px;
+    padding: 10px;
+    height: 70px;
+}
+.jobs-window .jobs-header p {
+    margin: 0;
+    font-size: 24px;
+}
+
+.jobs-window a {
+    color: white;
+    letter-spacing: -1px;
+}
+.jobs-window .jobs-header .metar {
+    cursor: help;
+}
+.jobs-window .jobs-header small,
+.jobs-window .jobs-header span {
+    display: block;
+    line-height: initial;
+}
+.jobs-window .jobs-footer {
+    position: absolute;
+    bottom: 0;
+    margin: 0;
+    line-height: 12px;
+    font-size: 12px;
+    text-align: center;
+    width: 100%;
+    color: #FFFFFF80;
+}
+
+.jobs-window .jobs-menu {
+    background: #404040;
+    margin: 0 4px;
+}
+
+.jobs-window .jobs-menu ul {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 0;
+    margin: 0;
+    font-size: 18px;
+}
+
+.jobs-window .jobs-menu ul li {
+    padding: 8px 0;
+    display: inline-block;
+    cursor: pointer;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.jobs-window .jobs-menu ul li:hover {
+    background-color: slategrey;
+}
+.jobs-window .jobs-menu ul li.active {
+    background-color: #15628f;
+}
+.jobs-content {
+    height: 410px;
+    padding: 4px;
+}
+
+.list-flight .flight-controls input:active:hover,
+.list-flight .flight-controls input:focus:hover,
+.list-flight .flight-controls input:hover,
+.jobs-content .list-jobs input:active:hover,
+.jobs-content .list-jobs input:focus:hover,
+.jobs-content .list-jobs input:hover {
+    background-color: slategrey;
+}
+
+.jobs-content .list-jobs input:focus,
+.jobs-content .list-jobs input:active,
+.jobs-content .list-jobs input:focus:not(:active),
+.jobs-content .list-jobs input {
+    background-color: #404040;
+    color: white;
+    width: 80%;
+    display: block;
+    margin: 8px 10% 0;
+    padding: 0;
+}
+
+.list-flight .flight-controls input:focus,
+.list-flight .flight-controls input:active,
+.list-flight .flight-controls input:focus:not(:active),
+.list-flight .flight-controls input {
+    background-color: #404040;
+    color: white;
+}
+.list-jobs {
+    overflow: hidden scroll;
+    height: 100%;
+}
+.list-jobs::-webkit-scrollbar-thumb:hover {
+    background-color: slategray;
+}
+
+.list-jobs::-webkit-scrollbar-thumb {
+    background-color: #404040;
+}
+.list-jobs::-webkit-scrollbar,
+.list-jobs::-webkit-scrollbar-track {
+    background-color: #FFFFFF00;
+}
+.list-jobs .list-header {
+    line-height: 28px;
+    position: fixed;
+    width: 360px;
+    background: #404040;
+    padding: 0 8px;
+}
+.list-jobs .list-header span {
+    display: inline-block;
+    margin: 0;
+    padding: 0
+}
+.list-jobs ul {
+    margin: 30px 0 0 0;
+    padding: 0;
+    line-height: 30px;
+}
+.list-jobs ul li:nth-child(even) {
+    background: #FFFFFF20;
+}
+.list-jobs ul li:nth-child(odd) {
+    background: #FFFFFF40;
+}
+.list-jobs .job-entry-available {
+    list-style: none;
+    font-size: 16px;
+    padding: 0 4px;
+}
+.list-jobs .job-entry-available div {
+    display: inline-block;
+}
+.list-jobs .job-entry-available div img {
+    background-color: white;
+    padding: 2px;
+    margin: 0 4px 0 -2px;
+}
+.list-jobs .list-header span:nth-child(1),
+.list-jobs .job-entry-available .flight {
+    width: 30%;
+}
+.list-jobs .job-entry-available .dest:before {
+    content: '✈';
+    margin-right: 4px;
+}
+.list-jobs .list-header span:nth-child(2),
+.list-jobs .job-entry-available .dest {
+    width: 25%;
+}
+.list-jobs .list-header span:nth-child(3),
+.list-jobs .job-entry-available .dist {
+    width: 20%;
+    text-align: right;
+}
+.list-jobs .list-header span:nth-child(4),
+.list-jobs .job-entry-available .actions {
+    width: 25%;
+    text-align: right;
+}
+
+.list-jobs .job-entry-available .actions button {
+    cursor: pointer;
+}
+
+.list-jobs .actions .mdl-button--icon {
+    background: none;
+    display: inline-block;
+    vertical-align: middle;
+    border: 0;
+    height: 24px
+}
+.list-jobs .actions .mdl-button--icon .material-icons {
+    position: initial;
+    transform: initial;
+    font-size: 24px;
+}
+
+.list-flight ul {
+    padding: 0;
+    margin: 0;
+}
+
+.list-flight li {
+    margin: 0 0 3px;
+    padding: 0;
+    display: flex;
+    gap: 3px;
+}
+
+.list-flight li div {
+    display: inline-block;
+    flex-basis: 20%;
+    flex-grow: 1;
+    padding: 0 4px;
+    background-color: #ffffff40;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.list-flight li div input {
+    background: none;
+    border: none;
+    width: 100%;
+    padding: 0;
+    outline: none;
+    font-size: 24px;
+    color: white;
+    margin-top: -4px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+}
+
+.list-flight li div input[type=time] {
+    height: 28px;
+}
+
+.list-flight li div input[type=time]::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+.list-flight li .delay-info,
+.list-flight li .flighttime-info,
+.list-flight li .traveled-info,
+.list-flight li .departure-info,
+.list-flight li .arrival-info,
+.list-flight li .airline-info,
+.list-flight li .destination-info,
+.list-flight li .speed-info {
+    background-color: #ffffff20;
+}
+
+.list-flight li .destination-info,
+.list-flight li .airline-info {
+    flex-basis: 45%;
+    line-height: 24px;
+    font-size: 20px;
+    padding: 4px;
+}
+.list-flight li .destination-info {
+    line-height: 14px;
+    font-size: 14px;
+    padding: 2px 4px;
+    cursor: help;
+}
+.list-flight li .destination-info small {
+    line-height: 12px;
+}
+.list-flight li .airline-info img {
+    width: 24px;
+    float: right;
+    background-color: white;
+    padding: 2px;
+    border: 1px solid grey;
+    border-radius: 4px;
+}
+
+.list-flight .flight-controls {
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+.list-flight .flight-controls input {
+    width: 194px;
+}
+.list-flight .flight-status {
+    height: 30px;
+    background: #FFFFFF20;
+    text-align: center;
+    display: block;
+    font-size: 24px;
+    position: relative;
+    padding: 5px 0 0;
+}
+.list-flight .flight-status:before {
+    content: 'STATUS';
+    font-size: 12px;
+    color: slategrey;
+    position: absolute;
+    top: 0;
+    left: 6px;
+}

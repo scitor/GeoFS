@@ -1,0 +1,60 @@
+<p class="jobs-title">... loading ...</p>
+<div class="jobs-header">
+  <span class="locinfo f16"></span>
+  <small class="coords"></small>
+  <span class="metar"></span>
+</div>
+<div class="jobs-menu">
+  <ul>
+    <li>Jobs</li>
+    <li>Flight</li>
+    <li>Career</li>
+    <li>Config</li>
+  </ul>
+</div>
+<div class="jobs-content">
+  <div class="list-jobs" style="display: none;">
+    <div class="list-header">
+      <span>Airline / Flight</span>
+      <span>Destination</span>
+      <span>Distance</span>
+    </div>
+    <ul></ul>
+    <input type="button" value="load more Jobs" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+  </div>
+  <div class="list-flight" style="display: none;">
+    <ul>
+      <li>
+        <div>Airline<input type="text" placeholder="ICAO" id="flightplan-airline"></div>
+        <div>Flight #<input type="text" id="flightplan-flight"></div>
+        <div class="airline-info"><img><span></span></div>
+      </li>
+      <li>
+        <div>Departure<input type="text" placeholder="ICAO" id="flightplan-dept"></div>
+        <div>Destination<input type="text" placeholder="ICAO" id="flightplan-dest"></div>
+        <div class="destination-info f16"></div>
+      </li>
+      <li>
+        <div>Sched.Dep<input type="time" id="flightplan-depttime"></div>
+        <div>Sched.Arr<input type="time" id="flightplan-arrvtime"></div>
+        <div class="delay-info">Delay<input type="text" id="flightplan-delay" readonly></div>
+        <div class="flighttime-info">Duration<input type="text" id="flightplan-duration" readonly></div>
+      </li>
+      <li>
+        <div class="departure-info">Actual Dep<input type="time" id="flightplan-depttime-actual" readonly></div>
+        <div class="arrival-info">Actual Arr<input type="time" id="flightplan-arrvtime-actual" readonly></div>
+        <div class="speed-info">Avg Speed<input type="text" id="flightplan-speed-avg" readonly></div>
+        <div class="traveled-info">Traveled<input type="text" id="flightplan-traveled" readonly></div>
+      </li>
+      <li class="flight-controls"><input type="button" id="flight-reset" value="Reset Flight" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+        <input type="button" id="flight-cancel" value="Cancel Flight" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+        <input type="button" id="flight-start" value="Start Flight" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+        <input type="button" id="flight-finish" value="Finish Flight" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"></li>
+      <li class="flight-status"></li>
+      <li class="flight-status-graph">Graph</li>
+    </ul>
+  </div>
+  <div class="list-career" style="display: none;"><ul><li>INOP</li></ul></div>
+  <div class="list-config" style="display: none;"><ul><li>INOP</li></ul></div>
+</div>
+<span class="jobs-footer"></span>
