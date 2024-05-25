@@ -6,14 +6,16 @@
 function JobsWindow(jobsManager) {
     this.jobMngr = jobsManager;
     jobsManager.window = this;
+
+    this._lastUpdateIcao = 'INIT';
 }
 
 JobsWindow.prototype.init = function() {
-    appendNewChild(document.head, 'link', { rel: 'stylesheet',
-        href: `${githubRepo}/randomJobs/styles.css?${now()}`
+    $.get(`${githubRepo}/randomJobs/styles.css?${now()}`, data => {
+        document.head.appendChild(createTag('style',{type:'text/css'}, data));
     });
-    appendNewChild(document.head, 'link', { rel: 'stylesheet',
-        href: `${githubRepo}/randomJobs/flags16.css?${now()}`
+    $.get(`${githubRepo}/randomJobs/flags16.css?${now()}`, data => {
+        document.head.appendChild(createTag('style',{type:'text/css'}, data));
     });
     const uiRightDom = $('.geofs-ui-right')[0];
     this.ctrlPadDom = appendNewChild(uiRightDom, 'div', {class:'jobs-pad'}, 1);
