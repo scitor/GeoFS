@@ -42,7 +42,7 @@ AirportHandler.prototype.getListStr = function(id) {
     return this.aList[5][id];
 };
 AirportHandler.prototype.updateCurrentAirport = function(coords) {
-    const nearby = [0, 1].map(s => this.aIndex[s].nearby([coords[0], coords[1]], convert.kmToNm(5e3))[0]);
+    const nearby = [0, 1].map(s => this.aIndex[s].nearby([coords[0], coords[1]], 5e3)[0]);
     if (nearby[0] && nearby[1]) {
         const nearbyCoords = nearby.map((icao,s) => this.aList[s][icao]);
         if (this.aIndex[0].dist(...coords,...nearbyCoords[0]) < this.aIndex[1].dist(...coords,...nearbyCoords[1])) {
@@ -64,7 +64,8 @@ AirportHandler.prototype.getNearbyAirports = function(coords, dist) {
 };
 
 AirportHandler.prototype.fetchAirportWeather = function(icao, callback) {
-    callback(METAR[icao]);
+    if (window.METAR!==undefined) callback(window.METAR[icao]);
+    else callback();
 };
 
 AirportHandler.prototype.getAirportDist = function(from, dest) {

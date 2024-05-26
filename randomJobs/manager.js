@@ -2,6 +2,7 @@
 
 /**
 * @typedef {Object} JobObj
+* @property {number} id
 * @property {string} dept departure ICAO
 * @property {string} dest destination ICAO
 * @property {string} flight number
@@ -42,6 +43,14 @@ JobsManager.prototype.init = function(getCustomData, ready) {
         } catch (e) {
             alert('Custom Data import failed, please check the format!\n'+e.message);
         }
+    }
+    if (!Object.keys(aList[0]).length) {
+        ['major','minor'].forEach(S => Object.values(geofs.api.map.markerLayers[S].tiles).forEach(row => {
+            row.forEach(m => {
+                if (m && m.runway)
+                    add2AList(m.runway);
+            });
+        }));
     }
     this.aList.forEach((sList, s) => Object.keys(sList).forEach(icao => this.aIndex[s].addPoint(icao, ...sList[icao])));
     $.getJSON(`${githubRepo}/icaos.json?${now()}`, json => {

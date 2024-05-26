@@ -61,7 +61,7 @@ function appendNewChild(parent, tagName, attributes = {}, pos = -1) {
  * @link https://stackoverflow.com/a/47593316
  *
  * @param {number} seed
- * @returns {function(range: number, offset: number): number}
+ * @returns {function(number, number): number}
  */
 function mulberry32(seed) {
     return function(range = 1, offset = 0) {
@@ -98,7 +98,7 @@ Index.prototype.addPoint = function (name, lat, lng) {
     this.index.get(iLat).get(iLng).add(name);
 };
 Index.prototype.nearbyIcao = function (icao, dist) {
-    const coords = this.aList[name];
+    const coords = this.aList[icao];
     return this.nearby(coords, dist);
 };
 Index.prototype.nearby = function (coords, dist) {
