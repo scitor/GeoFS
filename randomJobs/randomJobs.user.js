@@ -1,19 +1,19 @@
 // ==UserScript==
 // @name         GeoFS Random Jobs
-// @version      0.6.0.598
+// @version      0.6.1.601
 // @description  Adds basic transport jobs to GeoFS
 // @author       TurboMaximus
 // @match        https://*/geofs.php*
 // @icon         https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/logo.png
-// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/geofs.lib.js?0.6.0.598
-// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/patch.js?0.6.0.598
-// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/manager.js?0.6.0.598
-// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/airport.handler.js?0.6.0.598
-// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/flight.handler.js?0.6.0.598
-// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/window.js?0.6.0.598
-// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/jobs.page.js?0.6.0.598
-// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/flight.page.js?0.6.0.598
-// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/metar.js?0.6.0.598
+// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/geofs.lib.js?0.6.1.601
+// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/patch.js?0.6.1.601
+// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/manager.js?0.6.1.601
+// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/airport.handler.js?0.6.1.601
+// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/flight.handler.js?0.6.1.601
+// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/window.js?0.6.1.601
+// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/jobs.page.js?0.6.1.601
+// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/flight.page.js?0.6.1.601
+// @require      https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/metar.js?0.6.1.601
 // @downloadURL  https://raw.githubusercontent.com/scitor/GeoFS/master/randomJobs/randomJobs.user.js
 // @grant        none
 // ==/UserScript==
@@ -25,7 +25,7 @@ let wait = 1;
     if (!Object.keys(aList[0]).length && wait<5) {
         return setTimeout(init, 1000 * wait++);
     }
-    geofs.randomJobs = new JobsManager(aList, aIndex, '0.6.0.598');
+    geofs.randomJobs = new JobsManager(aList, aIndex, '0.6.1.601');
     geofs.randomJobs.init(addCustomData, then => new JobsWindow(geofs.randomJobs).init());
 })();
 

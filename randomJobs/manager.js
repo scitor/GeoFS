@@ -71,11 +71,12 @@ JobsManager.prototype.update = function() {
 
     this.currentAirport = icao;
     this.currentAirportMajor = major;
-    this.aHandler.nearbyCache = {};
-    this.currentAirportJobs = [];
     if (icao) {
         this.rng = mulberry32(this.aHandler.getIcaoId(icao)+(new Date()).getHours());
         this.currentAirportMaxJobs = [30,70].map(i=>Math.round(this.rng(i,5)));
+    } else {
+        this.aHandler.nearbyCache = {};
+        this.currentAirportJobs = [];
     }
     this.updateJobsList();
     this._lastUpdateIcao = icao;
