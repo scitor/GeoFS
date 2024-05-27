@@ -2,6 +2,7 @@
 
 /**
  * @param {JobsWindow} window
+ * @constructor
  */
 function JobsPage(window) {
     this.jobsWindow = window;
@@ -34,7 +35,7 @@ JobsPage.prototype.sortList = function(e) {
     let sortFn = ()=>{};
     this._lastSort = !this._lastSort;
     if (target == this.dom.listHeader.children[0]) {
-        sortFn = (a,b) => a.regional - b.regional || (this._lastSort ? a.flight.localeCompare(b.flight) : b.flight.localeCompare(a.flight));
+        sortFn = (a,b) => a.regional - b.regional || (this._lastSort ? a.flightno.localeCompare(b.flightno) : b.flightno.localeCompare(a.flightno));
     } else if (target == this.dom.listHeader.children[1]) {
         sortFn = (a,b) => a.regional - b.regional || (this._lastSort ? a.dest.localeCompare(b.dest) : b.dest.localeCompare(a.dest));
     } else {
@@ -57,11 +58,11 @@ JobsPage.prototype.reloadList = function() {
             if (this.jobMngr.aHandler.hasAIcon(job.airline))
                 src = `https://www.flightaware.com/images/airline_logos/24px/${job.airline}.png`;
         }
-        const flightDom = appendNewChild(jobDom, 'div',{class:'flight'});
+        const flightNoDom = appendNewChild(jobDom, 'div',{class:'flightno'});
         const aInfo = this.jobMngr.aHandler.getAInfo(job.airline);
-        appendNewChild(flightDom, 'img', {src, alt:aInfo.name, title:aInfo.name, referrerpolicy:'no-referrer'});
+        appendNewChild(flightNoDom, 'img', {src, alt:aInfo.name, title:aInfo.name, referrerpolicy:'no-referrer'});
 
-        flightDom.appendChild(createTag('span', {}, job.flight));
+        flightNoDom.appendChild(createTag('span', {}, job.flightno));
         jobDom.appendChild(createTag('div',{class:'dest'}, job.dest));
         jobDom.appendChild(createTag('div',{class:'dist'}, Math.round(convert.kmToNm(job.dist/1000))));
 
@@ -74,14 +75,14 @@ JobsPage.prototype.reloadList = function() {
                 this.jobMngr.aHandler.getAirportCoords(job.dept),
                 this.jobMngr.aHandler.getAirportCoords(job.dest)
             ]);
+            geofs.api.map.stopCreatePath();
             ui.panel.show(".geofs-map-list");
         };
         const actionPlanDom = appendNewChild(actionsDom, 'button', {class:'action-plan mdl-button--icon'});
         actionPlanDom.appendChild(createTag('i',{class:'material-icons'},'airplane_ticket'));
         actionPlanDom.onclick = () => {
-            job.status = STATUS.PLANING;
-            this.jobMngr.flight.setCurrent(job);
-            this.jobsWindow.mainMenuDom.querySelector('li:nth-child(2)').click();
+            this.jobMngr.flight.setCurrent(Object.assign({},job));
+            this.jobsWindow.mainMenuDom.querySelector('li[data-id=flight]').click();
         };
     });
 };

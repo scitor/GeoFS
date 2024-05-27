@@ -2,12 +2,13 @@
 
 /**
  * @param {JobsManager} jobsManager
+ * @constructor
  */
 function AirportHandler (jobsManager) {
     this.jobMngr = jobsManager;
     this.aIndex = jobsManager.aIndex;
     this.aList = jobsManager.aList;
-    this.hearbyCache = {};
+    this.nearbyCache = {};
     this.aInfo = {};
 }
 
@@ -27,6 +28,12 @@ AirportHandler.prototype.getAInfo = function(icao) {
         return {icao, iata:icao, name:this.getRegionalsName(icao)};
 
     return this.aInfo[icao];
+};
+AirportHandler.prototype.getIATAInfo = function(iata) {
+    if (iata.length == 1)
+        return {icao:iata, iata, name:this.getRegionalsName(iata)};
+
+    return Object.values(this.aInfo).find(a => a.iata == iata);
 };
 AirportHandler.prototype.getIcaoId = function(icao) {
     if (!icao || !icao.length) return 0;
@@ -57,10 +64,10 @@ AirportHandler.prototype.updateCurrentAirport = function(coords) {
     return [null,null];
 };
 AirportHandler.prototype.getNearbyAirports = function(coords, dist) {
-    if (this.hearbyCache[dist] === undefined) {
-        this.hearbyCache[dist] = [0, 1].map(s => this.aIndex[s].nearby([coords[0], coords[1]], dist));
+    if (this.nearbyCache[dist] === undefined) {
+        this.nearbyCache[dist] = [0, 1].map(s => this.aIndex[s].nearby([coords[0], coords[1]], dist));
     }
-    return this.hearbyCache[dist];
+    return this.nearbyCache[dist];
 };
 
 AirportHandler.prototype.fetchAirportWeather = function(icao, callback) {

@@ -22,13 +22,17 @@ const convert = {
  * Create tag with <name attributes=...
  *
  * @param {string} name
- * @param {object} attributes
- * @param {string} content
+ * @param {Object} attributes
+ * @param {string|number} content
  * @returns {HTMLElement}
  */
 function createTag(name, attributes = {}, content = '') {
+    /**
+     * @suppress {checkTypes} HTMLElement™
+     * @type {HTMLElement}
+     */
     const el = document.createElement(name);
-    Object.keys(attributes).forEach(k => el.setAttribute(k, attributes[k]));
+    Object.keys(attributes||{}).forEach(k => el.setAttribute(k, attributes[k]));
     if ((''+content).length) {
         el.innerHTML = content;
     }
@@ -40,7 +44,7 @@ function createTag(name, attributes = {}, content = '') {
  *
  * @param {HTMLElement} parent
  * @param {string} tagName
- * @param {object} attributes
+ * @param {Object} attributes
  * @param {number} pos insert in Nth position (default append)
  * @returns {HTMLElement}
  */
@@ -61,7 +65,7 @@ function appendNewChild(parent, tagName, attributes = {}, pos = -1) {
  * @link https://stackoverflow.com/a/47593316
  *
  * @param {number} seed
- * @returns {function(number, number): number}
+ * @returns {function(number=,number=):number}
  */
 function mulberry32(seed) {
     return function(range = 1, offset = 0) {
@@ -74,10 +78,42 @@ function mulberry32(seed) {
 function now() {
     return Math.floor(new Date()/1000);
 }
+
+function keyMap(array) {
+    return array.reduce((p, c) => (p[c] = true, p), {});
+}
+
+/**
+ * @constructor
+ */
+function SimpleTrans() {
+    this.trans = {};
+    this.add = (from, to, fn) => {
+        if (!this.trans[from])
+            this.trans[from] = {};
+        this.trans[from][to] = fn;
+    };
+    this.canDo = (from, to) => {
+        if (this.trans[undefined] && this.trans[undefined][to])
+            this.trans[undefined][to]();
+        if (this.trans[from] && this.trans[from][to]) {
+            if (this.trans[from][to]()) {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+}
+
+/**
+ * @param {Object} aList
+ * @constructor
+ */
 function Index(aList) {
     this.index = new Map();
     this.aList = aList;
-    this.int = (f) => parseInt(Math.floor(f));
+    this.int = (f) => parseInt(Math.floor(f), 10);
 }
 
 Index.prototype.addPoint = function (name, lat, lng) {
@@ -138,14 +174,18 @@ Index.prototype.dist = function (lat1, lng1, lat2, lng2) {
 
 // stolen from https://gist.github.com/samsonjs/716858
 const _ObjectStore = {};
+/**
+ * @param {string} table
+ * @constructor
+ */
 function ObjectStore(table) {
     if (localStorage === undefined)
-        localStorage = { setItem:() => {}, getItem:() => {} };
+        localStorage = { setItem:(key, val) => {}, getItem:(key) => {} };
 
     const jsonString = localStorage.getItem(table);
     if (jsonString !== undefined) {
         try {
-            _ObjectStore[table] = JSON.parse(jsonString);
+            _ObjectStore[table] = JSON.parse(jsonString||'');
         } catch (e) {}
     }
     if (!_ObjectStore[table])
@@ -161,17 +201,22 @@ function ObjectStore(table) {
 
     /**
      * @param {string} key
-     * @returns {*}
+     * @returns {Object|null}
      */
     this.get = key => object[key];
 
     /**
+     * Sync storage
+     */
+    this.sync = () => localStorage.setItem(table, JSON.stringify(object));
+
+    /**
      * @param {string} key
-     * @param {*} val
+     * @param {Object|null} val
      */
     this.set = (key, val) => {
         object[key] = val;
-        localStorage.setItem(table, JSON.stringify(object));
+        this.sync();
     };
 
     /**
@@ -179,6 +224,6 @@ function ObjectStore(table) {
      */
     this.del = key => {
         delete object[key];
-        localStorage.setItem(table, JSON.stringify(object));
+        this.sync();
     };
 }

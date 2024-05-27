@@ -5,17 +5,19 @@
 * @property {number} id
 * @property {string} dept departure ICAO
 * @property {string} dest destination ICAO
-* @property {string} flight number
+* @property {string} flightno number
 * @property {string} airline ICAO
 * @property {boolean} regional
 * @property {number} dist geo distance
 * @property {number} worth estimated insurance basis (wip)
 */
+let JobObj;
 
 /**
- * @param {object} aList
- * @param {object} aIndex
+ * @param {Object} aList
+ * @param {Object} aIndex
  * @param {string} version
+ * @constructor
  */
 function JobsManager(aList, aIndex, version) {
     this.version = version;
@@ -36,16 +38,16 @@ function JobsManager(aList, aIndex, version) {
     this.rng = mulberry32((new Date()).getHours());
 }
 JobsManager.prototype.init = function(getCustomData, ready) {
-    if (typeof getCustomData === 'function') {
+    /*if (typeof getCustomData === 'function') {
         let customData;
         try {
-            //importCustomData(getCustomData());
+            importCustomData(getCustomData());
         } catch (e) {
             alert('Custom Data import failed, please check the format!\n'+e.message);
         }
-    }
+    }*/
     if (!Object.keys(aList[0]).length) {
-        ['major','minor'].forEach(S => Object.values(geofs.api.map.markerLayers[S].tiles).forEach(row => {
+        ['major','minor'].forEach(s => Object.values(geofs.api.map.markerLayers[s].tiles).forEach(row => {
             row.forEach(m => {
                 if (m && m.runway)
                     add2AList(m.runway);
@@ -56,26 +58,32 @@ JobsManager.prototype.init = function(getCustomData, ready) {
     $.getJSON(`${githubRepo}/icaos.json?${now()}`, json => {
         json.forEach(e => aList.push(e));
         this.aHandler.init();
-        setInterval(() => this.update(), 5000);
+        setInterval(() => this.update(), 1000);
         ready();
     });
 };
 JobsManager.prototype.update = function() {
+    this.flight.update();
     const coords = geofs.aircraft.instance.getCurrentCoordinates();
     const [icao, major] = this.aHandler.updateCurrentAirport(coords);
-    this.currentAirport = icao;
-    this.currentAirportMajor = major;
-    if (icao == this._lastUpdateIcao)
+    if (icao == this._lastUpdateIcao && now()<this._lastUpdateTime+10)
         return;
 
-    this._lastUpdateIcao = icao;
-    if (!icao) {
-        this.aList.hearbyCache = {};
-        this.currentAirportJobs = [];
-    } else {
+    this.currentAirport = icao;
+    this.currentAirportMajor = major;
+    this.aHandler.nearbyCache = {};
+    this.currentAirportJobs = [];
+    if (icao) {
         this.rng = mulberry32(this.aHandler.getIcaoId(icao)+(new Date()).getHours());
         this.currentAirportMaxJobs = [30,70].map(i=>Math.round(this.rng(i,5)));
     }
+    this.updateJobsList();
+    this._lastUpdateIcao = icao;
+    this._lastUpdateTime = now();
+};
+
+JobsManager.prototype.updateJobsList = function() {
+    this.window.jobsPage.reloadList();
 };
 
 JobsManager.prototype.chance = function(percent) {
@@ -96,18 +104,18 @@ JobsManager.prototype.hasJob = function(dept, dest, airline) {
  * @param {string} airline
  * @returns {JobObj}
  */
-JobsManager.prototype.getJobObj = function(dept, dest, airline) {
+JobsManager.prototype.getJobObj = function(dept, dest, airline=undefined) {
 
-    let flight, regional = true;
+    let flightno, regional = true;
     if (airline) {
         const aInfo = this.aHandler.getAInfo(airline);
         regional = false;
-        flight = (aInfo.iata||aInfo.icao)+Math.round(100+Math.sqrt(this.rng(1e6)));
+        flightno = (aInfo.iata||aInfo.icao)+Math.round(100+Math.sqrt(this.rng(1e6)));
     } else {
         airline = String.fromCharCode(Math.round(this.rng(25,65)));
-        flight = airline+Math.round(Math.sqrt(this.rng(1e4)));
+        flightno = airline+'-'+Math.round(Math.sqrt(this.rng(1e4)));
     }
-    return {dept, dest, flight, airline, regional,
+    return {dept, dest, flightno, airline, regional,
         dist: this.aHandler.getAirportDist(dept, dest),
     };
 };
@@ -130,18 +138,17 @@ JobsManager.prototype.generateJob = function() {
 JobsManager.prototype.generateAirlineJob = function() {
     if (this.currentAirportJobs.filter(j=>!j.regional).length > this.currentAirportMaxJobs[0]) return;
     let job;
-    const routes = this.aList[4][this.aList[2].indexOf(this.currentAirport)];
-    if (routes) {
-        Object.keys(routes).find(toId => {
-            return routes[toId].find(carrierId => {
-                if (!this.hasJob(this.currentAirport, this.aList[2][toId], this.aList[3][carrierId].split('|')[0])) {
-                    job = this.getJobObj(this.currentAirport, this.aList[2][toId], this.aList[3][carrierId].split('|')[0]);
-                    job.worth = this.rngWorth(job.dist, 2,4);
-                    return true;
-                }
-            });
+    const rList = this.aList[4][this.aList[2].indexOf(this.currentAirport)];
+    if (!rList) return;
+    Object.keys(rList).find(destId => {
+        return rList[destId].find(aId => {
+            if (!this.hasJob(this.currentAirport, this.aList[2][destId], this.aList[3][aId].split('|')[0])) {
+                job = this.getJobObj(this.currentAirport, this.aList[2][destId], this.aList[3][aId].split('|')[0]);
+                job.worth = this.rngWorth(job.dist, 2,4);
+                return true;
+            }
         });
-    }
+    });
     return job;
 };
 JobsManager.prototype.generateRegionalJob = function() {

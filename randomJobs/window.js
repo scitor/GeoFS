@@ -2,6 +2,7 @@
 
 /**
  * @param {JobsManager} jobsManager
+ * @constructor
  */
 function JobsWindow(jobsManager) {
     this.jobMngr = jobsManager;
@@ -71,6 +72,7 @@ JobsWindow.prototype.windyPopup = function() {
     }
 };
 
+let _windowFirstTime = true;
 /**
  * @param {Event} e
  */
@@ -78,32 +80,39 @@ JobsWindow.prototype.toggleWindow = function(e) {
     if (e.target != this.ctrlPadDom) return;
     if (this.padLabelDom.classList.contains('blue-pad')) {
         this.padLabelDom.classList.remove('blue-pad');
+        this.ctrlPadDom.classList.remove('open');
         this.jobsWindowDom.style.right = '-500px';
     } else {
         this.padLabelDom.classList.add('blue-pad');
+        this.ctrlPadDom.classList.add('open');
         this.jobsWindowDom.style.right = '80px';
+        if (_windowFirstTime) {
+            this.mainMenuDom.querySelector('li[data-id=flight]').click();
+            _windowFirstTime = false;
+        }
     }
 };
 
 /**
- * @param {Event} e
+ * @param {PointerEvent} e
  */
 JobsWindow.prototype.handleMainMenu = function(e) {
+    if (!(e.target instanceof HTMLElement)) return;
     /** @type {HTMLElement} */
     const buttonDom = e.target;
-    const text = buttonDom.innerHTML;
+    const menuId = buttonDom.dataset.id;
     this.contentDom.querySelectorAll(':scope > div').forEach(div => {
-        const active = div.classList.contains('list-'+text.toLocaleLowerCase());
+        const active = div.classList.contains('list-'+menuId);
         div.style.display = active ? '' : 'none';
     });
     this.mainMenuDom.querySelectorAll('ul > li').forEach(li => {
-        if (li.innerHTML == text)
+        if (li.dataset.id == menuId)
             li.classList.add('active');
         else
             li.classList.remove('active');
     });
-    this._activeMenu = text.toLocaleLowerCase();
-    switch (text.toLocaleLowerCase()){
+    this._activeMenu = menuId;
+    switch (menuId){
         case 'jobs': this.jobsPage.reloadList(); break;
         case 'flight': this.flightPage.updateForm(); break;
         // @todo case 'career': this.loadCareerList(); break;
@@ -116,17 +125,27 @@ JobsWindow.prototype.update = function() {
         return;
 
     this.updateHeader();
-    if (this._activeMenu == 'flight')
+    if (this._activeMenu == 'flight') {
         this.flightPage.refreshDisplays();
+        this.flightPage.handleActiveButtons();
+    }
 };
 
 JobsWindow.prototype.updateHeader = function() {
     const dom = this.headerDom;
+    if (!geofs.aircraft.instance.groundContact && !geofs.aircraft.instance.waterContact) {
+        dom.title.innerHTML = 'AIRBORNE';
+        dom.locinfo.innerHTML = 'ALT SPEED HDG ETE';
+        dom.coords.innerHTML = '';
+        dom.metar.innerHTML = '';
+        return;
+    }
     const icao = this.jobMngr.currentAirport;
-    if (icao == this._lastUpdateIcao)
+    if (icao == this._lastUpdateIcao && now()<this._lastUpdateTime+60)
         return;
 
     this._lastUpdateIcao = icao;
+    this._lastUpdateTime = now();
     if (!icao) {
         dom.title.innerHTML = '... no airport nearby ...';
         dom.locinfo.innerHTML = '';

@@ -11,6 +11,9 @@
     };
 })();
 
+/**
+ * @param {{name:string,heading:number,lat:number,lon:number,length:number,major:boolean}} a
+ */
 function add2AList(a) {
     const [,name,icao] = a.name.split('|');
     if (icao && icao.length) {
