@@ -19,6 +19,7 @@ var geofs = {
             brakesOn: false,
             groundContact: false,
             waterContact: false,
+            trueAirSpeed: 0
         }
     },
     randomJobs: {}

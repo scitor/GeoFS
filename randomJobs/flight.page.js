@@ -21,19 +21,24 @@ FlightPage.prototype.populate = function(dom) {
     };
 
     this.inputsDom = {
-        flightno: dom.querySelector('#flightplan-flightno'),
-        tailno: dom.querySelector('#flightplan-tailno'),
-        dept: dom.querySelector('#flightplan-dept'),
-        dest: dom.querySelector('#flightplan-dest'),
-        depttime: dom.querySelector('#flightplan-depttime'),
-        arrvtime: dom.querySelector('#flightplan-arrvtime'),
+        flightno: dom.querySelector('#flight-number'),
+        tailno: dom.querySelector('#flight-tailnumber'),
+        dept: dom.querySelector('#flight-departure-icao'),
+        dest: dom.querySelector('#flight-destination-icao'),
+        depttime: dom.querySelector('#flight-departure-scheduled'),
+        arrvtime: dom.querySelector('#flight-arrival-scheduled'),
     };
 
     this.displaysDom = {
-        depttimeActual: dom.querySelector('#flightplan-depttime-actual'),
-        arrvtimeActual: dom.querySelector('#flightplan-arrvtime-actual'),
-        speedAvg: dom.querySelector('#flightplan-speed-avg'),
-        traveled: dom.querySelector('#flightplan-traveled'),
+        depttimeActual: dom.querySelector('#flight-departure-actual'),
+        arrvtimeActual: dom.querySelector('#flight-arrival-actual'),
+        arrvtimeActualLabel: dom.querySelector('#flight-arrival-actual').previousSibling,
+        speedAvg: dom.querySelector('#flight-speed-avg'),
+        traveled: dom.querySelector('#flight-traveled'),
+        delay: dom.querySelector('#flight-delay'),
+        delayLabel: dom.querySelector('#flight-delay').previousSibling,
+        duration: dom.querySelector('#flight-duration'),
+        durationLabel: dom.querySelector('#flight-duration').previousSibling,
     };
     this.flightStatusDom = dom.querySelector('.flight-status');
     this.airlineInfoDom = dom.querySelector('.airline-info');
@@ -74,6 +79,7 @@ FlightPage.prototype.cancelFlight = function() {
 FlightPage.prototype.resetFlight = function() {
     this.jobMngr.flight.resetFlight();
     this.updateForm();
+    this.refreshDisplays();
 };
 
 FlightPage.prototype.handleInputChange = function(key) {
@@ -104,6 +110,8 @@ FlightPage.prototype.buttonMask = function(bReset,bCancel,bStart,bFinish) {
 FlightPage.prototype.handleButtonVisibility = function(status) {
     if (status == STATUS.PLANING || status == STATUS.FINISHED)
         this.buttonMask(1,0,1,0);
+    else if (status == STATUS.ABORTED || status == STATUS.CRASHED)
+        this.buttonMask(1,0,0,1);
     else
         this.buttonMask(0,1,0,1);
 };
@@ -150,7 +158,7 @@ FlightPage.prototype.handleActiveButtons = function() {
         preventFinishFlight.push(HINTS.airborne);
     }
 
-    if (geofs.aircraft.instance.groundSpeed > 10) {
+    if (geofs.aircraft.instance.groundSpeed > 1) {
         preventStartFlight.push(HINTS.moving);
         preventFinishFlight.push(HINTS.moving);
     }
@@ -174,17 +182,17 @@ FlightPage.prototype.handleActiveButtons = function() {
     this.buttonsDom.finishFlight.disabled = preventFinishFlight.length > 0;
 };
 
+const _inputKeys = ['flightno', 'tailno', 'dept', 'dest', 'depttime', 'arrvtime'];
 FlightPage.prototype.updateForm = function() {
-    const inputKeys = ['flightno', 'tailno', 'dept', 'dest', 'depttime', 'arrvtime'];
     const flight = this.jobMngr.flight.getCurrent();
     if (!flight) {
-        inputKeys.forEach(k => { this.inputsDom[k].value = '' });
+        _inputKeys.forEach(k => { this.inputsDom[k].value = '' });
         this.airlineInfoDom.innerHTML = '';
         this.destInfoDom.innerHTML = '';
         return this.buttonMask(1,0,1,0);
     }
     this.handleButtonVisibility(flight.status);
-    inputKeys.forEach(k => {
+    _inputKeys.forEach(k => {
         this.inputsDom[k].value = flight[k] || '';
     });
     flight.airline = '';
@@ -253,28 +261,51 @@ FlightPage.prototype.updateDestinationInfo = function(icao) {
     this.destInfoDom.innerHTML += createTag('small',{},locinfo).outerHTML;
 };
 
+const _displayKeys = ['depttimeActual','arrvtimeActual', 'speedAvg', 'traveled', 'delay', 'duration'];
 FlightPage.prototype.refreshDisplays = function() {
     const flight = this.jobMngr.flight.getCurrent();
     const dDom = this.displaysDom;
     if (!flight || flight.status == STATUS.PLANING) {
-        ['depttimeActual','arrvtimeActual', 'speedAvg', 'traveled'].forEach(k => {
+        _displayKeys.forEach(k => {
             dDom[k].value = '';
         });
         this.flightStatusDom.innerHTML = '';
+        dDom.arrvtimeActualLabel.nodeValue = 'Actual Arr';
+        dDom.delayLabel.nodeValue = 'On Time';
+        dDom.durationLabel.nodeValue = 'Duration';
         return;
     }
-    this.flightStatusDom.innerHTML = flight.status.toLocaleUpperCase();
-    dDom.speedAvg.value = flight.speedAvg || '';
-    dDom.traveled.value = flight.traveled || '';
-    dDom.depttimeActual.value =  '';
-    dDom.arrvtimeActual.value =  '';
+    this.flightStatusDom.innerHTML = flight.status.replace(STATUS.AIRBORNE,'flight').toLocaleUpperCase();
+    if (!flight.times)
+        return;
 
-    if (flight.times?.start) {
-        const startTime = new Date(flight.times.start*1000);
-        dDom.depttimeActual.value = [('0'+startTime.getHours()).slice(-2),('0'+startTime.getMinutes()).slice(-2)].join(':');
+    dDom.traveled.value = Math.round(convert.kmToNm(flight.traveled/1000)) || '';
+    if (flight.delay) {
+        const delay = Math.abs(flight.delay);
+        dDom.delay.value = [zeroPad(Math.floor(delay/3600)), zeroPad(Math.round(delay/60)%60)].join(':');
+        dDom.delayLabel.nodeValue = flight.delay < -900 ? 'Delay' : (flight.delay > 0 ? 'Early' : 'On Time');
     }
-    if (flight.times?.end) {
+
+    const duration = flight.times.end ? flight.times.end-flight.times.start :
+                   (flight.times.landing||now())-(flight.times.takeoff||flight.times.start);
+    dDom.duration.value = [zeroPad(Math.floor(duration/3600)), zeroPad(Math.round(duration/60)%60)].join(':');
+    dDom.durationLabel.nodeValue = flight.times.end || !flight.times.takeoff ? 'Duration' : 'Duration (air)';
+    const avgSpeed = flight.traveled > 1e3 && duration>60 ? flight.traveled / duration : 0;
+    dDom.speedAvg.value = Math.round(convert.mpsToKts(avgSpeed)) || '';
+
+    if (flight.times.start) {
+        const startTime = new Date(flight.times.start*1000);
+        dDom.depttimeActual.value = humanTime(startTime);
+    }
+    if (flight.times.end) {
         const endTime = new Date(flight.times.end*1000);
-        dDom.arrvtimeActual.value = [('0'+endTime.getHours()).slice(-2),('0'+endTime.getMinutes()).slice(-2)].join(':');
+        dDom.arrvtimeActual.value = humanTime(endTime);
+        dDom.arrvtimeActualLabel.nodeValue = 'Actual Arr';
+
+    } else if (flight.status == STATUS.AIRBORNE && avgSpeed) {
+        const estTime = Math.max(0,Math.round((flight.dist-flight.traveled)/avgSpeed));
+        const estDate = new Date((now()+estTime)*1000);
+        dDom.arrvtimeActual.value = humanTime(estDate);
+        dDom.arrvtimeActualLabel.nodeValue = 'Estimated Arr';
     }
 };

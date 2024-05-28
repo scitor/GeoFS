@@ -78,32 +78,29 @@ function mulberry32(seed) {
 function now() {
     return Math.floor(new Date()/1000);
 }
+function zeroPad(int) {
+    return ('0'+int).slice(-2);
+}
+function humanTime(date) {
+    return [zeroPad(date.getHours()),zeroPad(date.getMinutes())].join(':');
+}
 
 function keyMap(array) {
     return array.reduce((p, c) => (p[c] = true, p), {});
 }
 
-/**
- * @constructor
- */
-function SimpleTrans() {
-    this.trans = {};
-    this.add = (from, to, fn) => {
-        if (!this.trans[from])
-            this.trans[from] = {};
-        this.trans[from][to] = fn;
-    };
-    this.canDo = (from, to) => {
-        if (this.trans[undefined] && this.trans[undefined][to])
-            this.trans[undefined][to]();
-        if (this.trans[from] && this.trans[from][to]) {
-            if (this.trans[from][to]()) {
-                return true;
-            }
-        } else {
-            return true;
-        }
+function diffDate(date1, date2, cont=false) {
+    if (cont && date2 < date1) {
+      date2.setDate(date2.getDate() + 1);
     }
+    return Math.round((date2 - date1)/1000);
+}
+function diffTime(time1, time2, cont=false) {
+    const date1 = new Date();
+    date1.setHours(...time1.split(':'));
+    const date2 = new Date();
+    date2.setHours(...time2.split(':'));
+    return diffDate(date1, date2, cont);
 }
 
 /**

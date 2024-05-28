@@ -123,6 +123,10 @@
     padding: 4px;
 }
 
+.jobs-window .list-flight input[type=text] {
+    font-family: monospace;
+}
+
 .list-flight .flight-controls input:active:hover,
 .list-flight .flight-controls input:focus:hover,
 .list-flight .flight-controls input:hover,
@@ -151,6 +155,22 @@
     background-color: #404040;
     color: white;
 }
+
+.list-flight li .tailno-input,
+.list-flight li .flightno-input,
+.list-flight li .departure-input,
+.list-flight li .destination-input,
+.list-flight li .sched-dep-input,
+.list-flight li .sched-arr-input,
+.list-flight li .delay-info,
+.list-flight li .flighttime-info,
+.list-flight li .traveled-info,
+.list-flight li .departure-info,
+.list-flight li .arrival-info,
+.list-flight li .speed-info {
+    color: silver;
+}
+
 .list-jobs {
     overflow: hidden scroll;
     height: 100%;

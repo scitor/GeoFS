@@ -23,10 +23,7 @@ function FlightHandler (jobsManager) {
     this.jobMngr = jobsManager;
     this.store = jobsManager.store;
 
-    this.tracker = {
-        airborneTime: 0,
-        groundTime: 0
-    };
+    this.resetTracker();
 }
 
 /**
@@ -115,12 +112,26 @@ FlightHandler.prototype.resetFlight = function() {
     this.setCurrent({});
 };
 
+FlightHandler.prototype.resetTracker = function() {
+    this.tracker = {
+        airborneTime: 0,
+        groundTime: 0,
+        airspeed: 0
+    };
+};
+
 FlightHandler.prototype.stopTracking = function() {
     const flight = this.getCurrent();
     if (!flight || !flight.times)
         return;
 
     flight.times.end = now();
+    if (flight.arrvtime !== undefined) {
+        const actualTime = new Date(flight.times.end*1000);
+        const plannedTime = new Date();
+        plannedTime.setHours(...flight.arrvtime.split(':'));
+        flight.delay = Math.floor((actualTime - plannedTime)/1000);
+    }
     this.sync();
 };
 
@@ -129,21 +140,24 @@ FlightHandler.prototype.startTracking = function() {
     if (!flight)
         return;
 
-    this.tracker = {
-        airborneTime: 0,
-        groundTime: 0
-    };
-
+    this.resetTracker();
     flight.times = {
         start: now(),
         takeoff: 0,
         landing: 0,
         end: 0
     };
+    if (flight.depttime !== undefined) {
+        const actualTime = new Date(flight.times.start*1000);
+        const plannedTime = new Date();
+        plannedTime.setHours(...flight.depttime.split(':'));
+        flight.delay = diffDate(actualTime, plannedTime);
+        //flight.delay = Math.floor((actualTime - plannedTime)/1000);
+    }
     this.sync();
 };
 
-const _trackStatus = keyMap([STATUS.ONGROUND, STATUS.DEPARTURE, STATUS.AIRBORNE]);
+const _trackStatus = keyMap([STATUS.ONGROUND, STATUS.DEPARTURE, STATUS.AIRBORNE, STATUS.ARRIVAL, STATUS.ABORTED, STATUS.DIVERTED]);
 FlightHandler.prototype.update = function() {
     const flight = this.getCurrent();
     if (!flight || !_trackStatus[flight.status])
@@ -152,23 +166,24 @@ FlightHandler.prototype.update = function() {
     const tracker = this.tracker;
     const times = flight.times;
     const plane = geofs.aircraft.instance;
-
-    if (!plane.groundContact && !plane.waterContact) {
+    let airborne = !plane.groundContact && !plane.waterContact;
+    if (airborne) {
         tracker.airborneTime++;
         tracker.groundTime = 0;
+        tracker.airspeed = (tracker.airspeed*9 + plane.trueAirSpeed) / 10;
+        flight.traveled = (flight.traveled||0) + plane.groundSpeed;
     } else {
-        tracker.airborneTime = 0;
         tracker.groundTime++;
+        tracker.airborneTime = 0;
+        tracker.airspeed = undefined;
+        flight.taxiDist = (flight.taxiDist||0) + plane.groundSpeed;
     }
+
     switch (flight.status) {
         case STATUS.ONGROUND:
         case STATUS.DEPARTURE: {
-            if (!times.start) {
-                times.start = now();
-            }
             if (tracker.airborneTime > 5 && plane.groundSpeed > 10) {
                 flight.status = STATUS.AIRBORNE;
-
                 if (!times.takeoff) {
                     times.takeoff = now()-tracker.airborneTime;
                 }
@@ -176,24 +191,26 @@ FlightHandler.prototype.update = function() {
         } break;
 
         case STATUS.AIRBORNE: {
-            if (tracker.groundTime > 5) {
-                if (this.jobMngr.currentAirport) {
-                    if (this.jobMngr.currentAirport == flight.dest) {
-                        flight.status = STATUS.ARRIVAL;
-                    } else if (this.jobMngr.currentAirport == flight.dept) {
-                        flight.status = STATUS.ABORTED;
-                    } else {
-                        flight.status = STATUS.DIVERTED;
-                    }
+            if (tracker.groundTime < 5)
+                break;
+
+            if (this.jobMngr.currentAirport) {
+                if (this.jobMngr.currentAirport == flight.dest) {
+                    flight.status = STATUS.ARRIVAL;
+                } else if (this.jobMngr.currentAirport == flight.dept) {
+                    flight.status = STATUS.ABORTED;
                 } else {
-                    flight.status = STATUS.ONGROUND;
+                    flight.status = STATUS.DIVERTED;
                 }
-                if (plane.crashed) {
-                    flight.status = STATUS.CRASHED;
-                }
-                if (!times.landing) {
-                    times.landing = now()-tracker.groundTime;
-                }
+            } else {
+                flight.status = STATUS.ONGROUND;
+            }
+            if (plane.crashed) {
+                flight.status = STATUS.CRASHED;
+                flight.crashed = true;
+            }
+            if (!times.landing) {
+                times.landing = now()-tracker.groundTime;
             }
         } break;
     }

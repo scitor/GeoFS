@@ -64,7 +64,7 @@ JobsPage.prototype.reloadList = function() {
 
         flightNoDom.appendChild(createTag('span', {}, job.flightno));
         jobDom.appendChild(createTag('div',{class:'dest'}, job.dest));
-        jobDom.appendChild(createTag('div',{class:'dist'}, Math.round(convert.kmToNm(job.dist/1000))));
+        jobDom.appendChild(createTag('div',{class:'dist'}, Math.round(convert.kmToNm(job.dist/1000)) + 'NM'));
 
         const actionsDom = appendNewChild(jobDom,'div',{class:'actions'});
         const actionMapDom = appendNewChild(actionsDom, 'button', {class:'action-plan mdl-button--icon'});
