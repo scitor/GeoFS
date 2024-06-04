@@ -16,12 +16,13 @@ const STATUS = {
 };
 
 /**
- * @param {JobsManager} jobsManager
+ * @param {RandomJobsMod} mod
  * @constructor
  */
-function FlightHandler (jobsManager) {
-    this.jobMngr = jobsManager;
-    this.store = jobsManager.store;
+function FlightHandler (mod) {
+    this.aHandler = mod.aHandler;
+    this.airport = mod.airport;
+    this.store = mod.store;
 
     this.resetTracker();
 }
@@ -42,7 +43,7 @@ FlightHandler.prototype.getCurrent = function() {
  * @param {JobObj} info
  */
 FlightHandler.prototype.setCurrent = function(info) {
-    const id = (icao) => this.jobMngr.aHandler.getIcaoId(icao);
+    const id = (icao) => this.aHandler.getIcaoId(icao);
     if (!info.id)
         info.id = id(info.dept)+''+id(info.dest)+''+now();
 
@@ -130,11 +131,10 @@ FlightHandler.prototype.stopTracking = function() {
         const actualTime = new Date(flight.times.end*1000);
         const plannedTime = new Date();
         plannedTime.setHours(...flight.arrvtime.split(':'));
-        flight.delay = Math.floor((actualTime - plannedTime)/1000);
+        flight.delay = diffDate(plannedTime, actualTime);
     }
     this.sync();
 };
-
 FlightHandler.prototype.startTracking = function() {
     const flight = this.getCurrent();
     if (!flight)
@@ -151,10 +151,13 @@ FlightHandler.prototype.startTracking = function() {
         const actualTime = new Date(flight.times.start*1000);
         const plannedTime = new Date();
         plannedTime.setHours(...flight.depttime.split(':'));
-        flight.delay = diffDate(actualTime, plannedTime);
-        //flight.delay = Math.floor((actualTime - plannedTime)/1000);
+        flight.delay = diffDate(plannedTime, actualTime);
     }
     this.sync();
+};
+
+FlightHandler.prototype.getAvgAirspeed = function() {
+    return this.tracker && this.tracker.airspeed;
 };
 
 const _trackStatus = keyMap([STATUS.ONGROUND, STATUS.DEPARTURE, STATUS.AIRBORNE, STATUS.ARRIVAL, STATUS.ABORTED, STATUS.DIVERTED]);
@@ -170,7 +173,7 @@ FlightHandler.prototype.update = function() {
     if (airborne) {
         tracker.airborneTime++;
         tracker.groundTime = 0;
-        tracker.airspeed = (tracker.airspeed*9 + plane.trueAirSpeed) / 10;
+        tracker.airspeed = ((tracker.airspeed||plane.trueAirSpeed)*29 + plane.trueAirSpeed) / 30;
         flight.traveled = (flight.traveled||0) + plane.groundSpeed;
     } else {
         tracker.groundTime++;
@@ -182,11 +185,12 @@ FlightHandler.prototype.update = function() {
     switch (flight.status) {
         case STATUS.ONGROUND:
         case STATUS.DEPARTURE: {
-            if (tracker.airborneTime > 5 && plane.groundSpeed > 10) {
-                flight.status = STATUS.AIRBORNE;
-                if (!times.takeoff) {
-                    times.takeoff = now()-tracker.airborneTime;
-                }
+            if (tracker.airborneTime < 5 || plane.groundSpeed < 10)
+                break;
+
+            flight.status = STATUS.AIRBORNE;
+            if (!times.takeoff) {
+                times.takeoff = now()-tracker.airborneTime;
             }
         } break;
 
@@ -194,14 +198,16 @@ FlightHandler.prototype.update = function() {
             if (tracker.groundTime < 5)
                 break;
 
-            if (this.jobMngr.currentAirport) {
-                if (this.jobMngr.currentAirport == flight.dest) {
+            const icao = this.airport.icao;
+            if (icao) {
+                if (icao == flight.dest) {
                     flight.status = STATUS.ARRIVAL;
-                } else if (this.jobMngr.currentAirport == flight.dept) {
+                } else if (icao == flight.dept) {
                     flight.status = STATUS.ABORTED;
                 } else {
                     flight.status = STATUS.DIVERTED;
                 }
+                times.landing = now()-tracker.groundTime;
             } else {
                 flight.status = STATUS.ONGROUND;
             }

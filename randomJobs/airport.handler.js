@@ -1,14 +1,13 @@
 'use strict';
 
 /**
- * @param {JobsManager} jobsManager
+ * @param {RandomJobsMod} mod
  * @constructor
  */
-function AirportHandler (jobsManager) {
-    this.jobMngr = jobsManager;
-    this.aIndex = jobsManager.aIndex;
-    this.aList = jobsManager.aList;
-    this.nearbyCache = {};
+function AirportHandler (mod) {
+    this.airport = mod.airport;
+    this.aIndex = mod.aIndex;
+    this.aList = mod.aList;
     this.aInfo = {};
 }
 
@@ -48,7 +47,7 @@ AirportHandler.prototype.getListStr = function(id) {
     if (id===0) return '';
     return this.aList[5][id];
 };
-AirportHandler.prototype.updateCurrentAirport = function(coords) {
+AirportHandler.prototype.getAirportNearby = function(coords) {
     const nearby = [0, 1].map(s => this.aIndex[s].nearby([coords[0], coords[1]], 5e3)[0]);
     if (nearby[0] && nearby[1]) {
         const nearbyCoords = nearby.map((icao,s) => this.aList[s][icao]);
@@ -64,10 +63,10 @@ AirportHandler.prototype.updateCurrentAirport = function(coords) {
     return [null,null];
 };
 AirportHandler.prototype.getNearbyAirports = function(coords, dist) {
-    if (this.nearbyCache[dist] === undefined) {
-        this.nearbyCache[dist] = [0, 1].map(s => this.aIndex[s].nearby([coords[0], coords[1]], dist));
+    if (this.airport.nearby[dist] === undefined) {
+        this.airport.nearby[dist] = [0, 1].map(s => this.aIndex[s].nearby([coords[0], coords[1]], dist));
     }
-    return this.nearbyCache[dist];
+    return this.airport.nearby[dist];
 };
 
 AirportHandler.prototype.fetchAirportWeather = function(icao, callback) {

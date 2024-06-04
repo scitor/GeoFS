@@ -7,7 +7,7 @@
 <div class="jobs-menu">
   <ul>
     <li data-id="flight">Flight</li>
-    <li data-id="jobs">List</li>
+    <li data-id="jobs">Airport</li>
     <li data-id="history">Career</li>
     <li data-id="config">Config</li>
   </ul>
@@ -18,6 +18,7 @@
       <span>Airline / Flight</span>
       <span>Destination</span>
       <span>Distance</span>
+      <span></span>
     </div>
     <ul></ul>
     <input type="button" value="load Flights" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
@@ -30,20 +31,20 @@
         <div class="airline-info"><span></span></div>
       </li>
       <li>
-        <div class="departure-input">Departure<input type="text" placeholder="ICAO" id="flight-departure-icao"></div>
+        <div class="departure-input">Origin<input type="text" placeholder="ICAO" id="flight-departure-icao"></div>
         <div class="destination-input">Destination<input type="text" placeholder="ICAO" id="flight-destination-icao"></div>
         <div class="destination-info f16"></div>
       </li>
       <li>
-        <div class="sched-dep-input">Scheduled Dep<input type="time" id="flight-departure-scheduled"></div>
-        <div class="sched-arr-input">Scheduled Arr<input type="time" id="flight-arrival-scheduled"></div>
-        <div class="delay-info">On Time<input type="text" id="flight-delay" readonly></div>
-        <div class="speed-info">GS kts<input type="text" id="flight-speed-avg" readonly></div>
+        <div class="sched-dep-input">Scheduled Dep<input type="text" placeholder="--:--" id="flight-departure-scheduled"></div>
+        <div class="sched-arr-input">Scheduled Arr<input type="text" placeholder="--:--" id="flight-arrival-scheduled"></div>
+        <div class="delay-info">On Time<input type="text" placeholder="--:--" id="flight-delay" readonly></div>
+        <div class="speed-info">Average kts<input type="text" id="flight-speed-avg" readonly></div>
       </li>
       <li>
-        <div class="departure-info">Actual Dep<input type="time" id="flight-departure-actual" readonly></div>
-        <div class="arrival-info">Actual Arr<input type="time" id="flight-arrival-actual" readonly></div>
-        <div class="flighttime-info">Duration<input type="time" id="flight-duration" readonly></div>
+        <div class="departure-info">Actual Dep<input type="text" placeholder="--:--" id="flight-departure-actual" readonly></div>
+        <div class="arrival-info">Actual Arr<input type="text" placeholder="--:--" id="flight-arrival-actual" readonly></div>
+        <div class="flighttime-info">Duration<input type="text" placeholder="--:--" id="flight-duration" readonly></div>
         <div class="traveled-info">Traveled NM<input type="text" id="flight-traveled" readonly></div>
       </li>
       <li class="flight-controls"><input type="button" id="flight-reset" value="Reset Flight" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
@@ -51,7 +52,7 @@
         <input type="button" id="flight-start" value="Start Flight" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
         <input type="button" id="flight-finish" value="Finish Flight" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"></li>
       <li class="flight-status"></li>
-      <li class="flight-status-graph">Graph</li>
+      <li class="flight-status-graph"></li>
     </ul>
   </div>
   <div class="list-history" style="display: none;"><ul><li>INOP</li></ul></div>

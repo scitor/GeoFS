@@ -1,17 +1,17 @@
 'use strict';
 
 /**
- * @param {JobsManager} jobsManager
+ * @param {RandomJobsMod} mod
  * @constructor
  */
-function JobsWindow(jobsManager) {
-    this.jobMngr = jobsManager;
-    jobsManager.window = this;
+function MainWindow(mod) {
+    this.mod = mod;
+    mod.window = this;
 
-    this._lastUpdateIcao = 'INIT';
+    this.last = {icao:'',time:0};
 }
 
-JobsWindow.prototype.init = function() {
+MainWindow.prototype.init = function() {
     $.get(`${githubRepo}/randomJobs/styles.css?${now()}`, data => {
         document.head.appendChild(createTag('style',{type:'text/css'}, data));
     });
@@ -25,19 +25,21 @@ JobsWindow.prototype.init = function() {
     this.padLabelDom = appendNewChild(this.ctrlPadDom, 'div', {class:'control-pad-label transp-pad'});
     this.padLabelDom.innerHTML = 'JOBS';
 
-    this.jobsWindowDom = appendNewChild(this.ctrlPadDom, 'div', {class:'jobs-window'});
+    this.jobsWindowDom = appendNewChild(document.body, 'div', {class:'jobs-window'});
     this.jobsWindowDom.innerHTML = '<p style="text-align:center;">... initializing ...</p>';
+    this.jobsWindowDom.style.left = (window.innerWidth*2)+'px';
+    this.jobsWindowDom.style.display = 'none';
 
     $.get(`${githubRepo}/randomJobs/window.html?${now()}`, data => {
         this.populate(data);
-        setInterval(() => this.update(), 1000);
+        this.jobsWindowDom.style.display = '';
     });
 };
 
 /**
  * @param {string} tpl
  */
-JobsWindow.prototype.populate = function(tpl) {
+MainWindow.prototype.populate = function(tpl) {
     this.jobsWindowDom.innerHTML = tpl;
     this.headerDom = {
         title: this.jobsWindowDom.querySelector('.jobs-title'),
@@ -46,27 +48,51 @@ JobsWindow.prototype.populate = function(tpl) {
         metar: this.jobsWindowDom.querySelector('.metar'),
     };
     this.footerDom = this.jobsWindowDom.querySelector('.jobs-footer');
-    this.footerDom.innerHTML = 'Random Jobs v' + this.jobMngr.version;
+    this.footerDom.innerHTML = 'Random Jobs v' + this.mod.version;
 
     this.mainMenuDom = this.jobsWindowDom.querySelector('.jobs-menu');
     this.mainMenuDom.onclick = (e) => this.handleMainMenu(e);
 
     this.contentDom = this.jobsWindowDom.querySelector('.jobs-content');
 
-    this.jobsPage = new JobsPage(this);
+    this.jobsPage = new AirportPage(this);
     this.jobsPage.populate(this.contentDom.querySelector('.list-jobs'));
 
-    this.flightPage = new FlightPage(this);
+    this.flightPage = new FlightplanPage(this);
     this.flightPage.populate(this.contentDom.querySelector('.list-flight'));
 
     this.headerDom.metar.onclick = () => this.windyPopup();
+    this.makeDraggable(this.headerDom.title, this.jobsWindowDom);
+
     this.populated = true;
 };
 
-JobsWindow.prototype.windyPopup = function() {
-    const icao = this.jobMngr.currentAirport;
+MainWindow.prototype.makeDraggable = function(header, win) {
+    const offset = [0,0];
+    header.onmousedown = (e) => {
+        e.preventDefault();
+        offset[0] = e.clientX - win.offsetLeft;
+        offset[1] = e.clientY - win.offsetTop;
+        header.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('mousemove', onMouseMove);
+    };
+    function onMouseMove(e) {
+        e.preventDefault();
+        win.style.left = (e.clientX - offset[0]) + 'px';
+        win.style.top = (e.clientY - offset[1]) + 'px';
+        win.style.transition = 'none';
+    }
+    function onMouseUp() {
+        win.style.transition = '';
+        header.removeEventListener('mouseup', onMouseUp);
+        document.removeEventListener('mousemove', onMouseMove);
+    }
+};
+
+MainWindow.prototype.windyPopup = function() {
+    const icao = this.mod.airport.icao;
     if (icao) {
-        const coords = this.jobMngr.aHandler.getAirportCoords(icao);
+        const coords = this.mod.aHandler.getAirportCoords(icao);
         if (coords)
             window.open('https://embed.windy.com/embed.html?type=map&location=coordinates&zoom=7&lat='+coords[0]+'&lon='+coords[1],'_blank','popup=1',false);
     }
@@ -76,16 +102,21 @@ let _windowFirstTime = true;
 /**
  * @param {Event} e
  */
-JobsWindow.prototype.toggleWindow = function(e) {
+MainWindow.prototype.toggleWindow = function(e) {
     if (e.target != this.ctrlPadDom) return;
     if (this.padLabelDom.classList.contains('blue-pad')) {
         this.padLabelDom.classList.remove('blue-pad');
         this.ctrlPadDom.classList.remove('open');
-        this.jobsWindowDom.style.right = '-500px';
+        this.jobsWindowDom.dataset.left = this.jobsWindowDom.style.left;
+        this.jobsWindowDom.style.left = (window.innerWidth*2) + 'px';
     } else {
         this.padLabelDom.classList.add('blue-pad');
         this.ctrlPadDom.classList.add('open');
-        this.jobsWindowDom.style.right = '80px';
+        if (this.jobsWindowDom.dataset.left)
+            this.jobsWindowDom.style.left = this.jobsWindowDom.dataset.left;
+        else
+            this.jobsWindowDom.style.left = (window.innerWidth - this.jobsWindowDom.offsetWidth - 80) + 'px';
+
         if (_windowFirstTime) {
             this.mainMenuDom.querySelector('li[data-id=flight]').click();
             _windowFirstTime = false;
@@ -96,7 +127,7 @@ JobsWindow.prototype.toggleWindow = function(e) {
 /**
  * @param {PointerEvent} e
  */
-JobsWindow.prototype.handleMainMenu = function(e) {
+MainWindow.prototype.handleMainMenu = function(e) {
     if (!(e.target instanceof HTMLElement)) return;
     /** @type {HTMLElement} */
     const buttonDom = e.target;
@@ -120,7 +151,7 @@ JobsWindow.prototype.handleMainMenu = function(e) {
     }
 };
 
-JobsWindow.prototype.update = function() {
+MainWindow.prototype.update = function() {
     if (!this.populated)
         return;
 
@@ -131,7 +162,11 @@ JobsWindow.prototype.update = function() {
     }
 };
 
-JobsWindow.prototype.updateHeader = function() {
+MainWindow.prototype.reloadJobsList = function() {
+    this.jobsPage.reloadList();
+};
+
+MainWindow.prototype.updateHeader = function() {
     const dom = this.headerDom;
     if (!geofs.aircraft.instance.groundContact && !geofs.aircraft.instance.waterContact) {
         dom.title.innerHTML = 'AIRBORNE';
@@ -140,20 +175,13 @@ JobsWindow.prototype.updateHeader = function() {
         dom.metar.innerHTML = '';
         return;
     }
-    const icao = this.jobMngr.currentAirport;
-    if (icao == this._lastUpdateIcao && now()<this._lastUpdateTime+60)
+    const icao = this.mod.airport.icao;
+    if (icao === this.last.icao)
         return;
 
-    this._lastUpdateIcao = icao;
-    this._lastUpdateTime = now();
-    if (!icao) {
-        dom.title.innerHTML = '... no airport nearby ...';
-        dom.locinfo.innerHTML = '';
-        dom.coords.innerHTML = '';
-        dom.metar.innerHTML = '';
-    } else {
-        const info = this.jobMngr.aHandler.getAirportInfo(icao);
-        let airportName = this.jobMngr.aHandler.getAirportName(icao) || info.name;
+    if (icao) {
+        const info = this.mod.aHandler.getAirportInfo(icao);
+        let airportName = this.mod.aHandler.getAirportName(icao) || info.name;
         dom.title.innerHTML = airportName.replace(' International ', ' Intl. ').replace(/ Airport$/, '');
         let locinfo = icao;
         if (info.iata) locinfo+= ' ('+info.iata+')';
@@ -164,11 +192,11 @@ JobsWindow.prototype.updateHeader = function() {
         }
 
         dom.locinfo.innerHTML = locinfo;
-        const aCoords = this.jobMngr.aHandler.getAirportCoords(icao);
+        const aCoords = this.mod.aHandler.getAirportCoords(icao);
         dom.coords.innerHTML = 'Coords ' + aCoords.map(c=>c.toFixed(4)).join(', ');
         dom.coords.innerHTML += ', Elevation ' + info.elevation + ' ft';
         dom.metar.innerHTML = 'METAR: receiving ...';
-        this.jobMngr.aHandler.fetchAirportWeather(icao, json => {
+        this.mod.aHandler.fetchAirportWeather(icao, json => {
             if (json && json.METAR) {
                 dom.metar.innerHTML = 'METAR:';
                 const weather = Object.keys(json).map(k => k+':'+json[k]).join('\n');
@@ -178,5 +206,12 @@ JobsWindow.prototype.updateHeader = function() {
             } else
                 dom.metar.innerHTML = 'METAR: INOP';
         });
+    } else {
+        dom.title.innerHTML = '... no airport nearby ...';
+        dom.locinfo.innerHTML = '';
+        dom.coords.innerHTML = '';
+        dom.metar.innerHTML = '';
     }
+
+    this.last.icao = icao;
 };

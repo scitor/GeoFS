@@ -1,53 +1,57 @@
 'use strict';
 
 /**
- * @param {JobsWindow} window
+ * @param {MainWindow} window
  * @constructor
  */
-function JobsPage(window) {
+function AirportPage(window) {
     this.jobsWindow = window;
-    this.jobMngr = window.jobMngr;
+    this.mod = window.mod;
 
 }
 
 /**
  * @param {HTMLElement} dom
  */
-JobsPage.prototype.populate = function(dom) {
+AirportPage.prototype.populate = function(dom) {
     this.dom = {
         listHeader: dom.querySelector('div'),
         list: dom.querySelector('ul'),
         loadButton: dom.querySelector('input')
     };
-    this.dom.loadButton.onclick = () => this.loadJobs();
     this.dom.listHeader.onclick = (e) => this.sortList(e);
+    this.dom.loadButton.onclick = () => this.loadJobs();
+    //@todo config (autoload list)
+    //new IntersectionObserver(() => this.loadJobs()).observe(this.dom.loadButton);
 };
 
-JobsPage.prototype.loadJobs = function() {
-    for (let i = 0; i < this.jobMngr.rng(10, 10); ++i) {
-        this.jobMngr.generateJob();
+AirportPage.prototype.loadJobs = function() {
+    for (let i = 0; i < 20; ++i) {
+        this.mod.generateJob();
     }
     this.reloadList();
 };
 
-JobsPage.prototype.sortList = function(e) {
+AirportPage.prototype.sortList = function(e) {
     const target = e.target;
-    let sortFn = ()=>{};
+    let sortFn;
     this._lastSort = !this._lastSort;
     if (target == this.dom.listHeader.children[0]) {
         sortFn = (a,b) => a.regional - b.regional || (this._lastSort ? a.flightno.localeCompare(b.flightno) : b.flightno.localeCompare(a.flightno));
     } else if (target == this.dom.listHeader.children[1]) {
         sortFn = (a,b) => a.regional - b.regional || (this._lastSort ? a.dest.localeCompare(b.dest) : b.dest.localeCompare(a.dest));
-    } else {
+    } else if (target == this.dom.listHeader.children[2]) {
         sortFn = (a,b) => a.regional - b.regional || (this._lastSort ? b.dist - a.dist : a.dist - b.dist);
     }
-    this.jobMngr.sortJobsList(sortFn);
+    if (sortFn)
+        this.mod.sortJobsList(sortFn);
+
     this.reloadList();
 };
 
-JobsPage.prototype.reloadList = function() {
+AirportPage.prototype.reloadList = function() {
     this.dom.list.innerHTML = '';
-    const jobsList = this.jobMngr.getJobsList();
+    const jobsList = this.mod.getJobsList();
     jobsList.forEach(job => {
         const jobDom = appendNewChild(this.dom.list, 'li', {class:'job-entry-available'});
 
@@ -55,11 +59,11 @@ JobsPage.prototype.reloadList = function() {
         if (job.regional) {
             src = `${githubRepo}/randomJobs/regional.png`;
         } else {
-            if (this.jobMngr.aHandler.hasAIcon(job.airline))
+            if (this.mod.aHandler.hasAIcon(job.airline))
                 src = `https://www.flightaware.com/images/airline_logos/24px/${job.airline}.png`;
         }
         const flightNoDom = appendNewChild(jobDom, 'div',{class:'flightno'});
-        const aInfo = this.jobMngr.aHandler.getAInfo(job.airline);
+        const aInfo = this.mod.aHandler.getAInfo(job.airline);
         appendNewChild(flightNoDom, 'img', {src, alt:aInfo.name, title:aInfo.name, referrerpolicy:'no-referrer'});
 
         flightNoDom.appendChild(createTag('span', {}, job.flightno));
@@ -72,8 +76,8 @@ JobsPage.prototype.reloadList = function() {
         actionMapDom.onclick = () => {
             geofs.api.map.clearPath();
             geofs.api.map.setPathPoints([
-                this.jobMngr.aHandler.getAirportCoords(job.dept),
-                this.jobMngr.aHandler.getAirportCoords(job.dest)
+                this.mod.aHandler.getAirportCoords(job.dept),
+                this.mod.aHandler.getAirportCoords(job.dest)
             ]);
             geofs.api.map.stopCreatePath();
             ui.panel.show(".geofs-map-list");
@@ -81,7 +85,7 @@ JobsPage.prototype.reloadList = function() {
         const actionPlanDom = appendNewChild(actionsDom, 'button', {class:'action-plan mdl-button--icon'});
         actionPlanDom.appendChild(createTag('i',{class:'material-icons'},'airplane_ticket'));
         actionPlanDom.onclick = () => {
-            this.jobMngr.flight.setCurrent(Object.assign({},job));
+            this.mod.flight.setCurrent(Object.assign({},job));
             this.jobsWindow.mainMenuDom.querySelector('li[data-id=flight]').click();
         };
     });

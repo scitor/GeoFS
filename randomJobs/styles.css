@@ -1,8 +1,3 @@
-/* GeoFS right UI opacity reset */
-.geofs-ui-center .geofs-ui-right { opacity: 1; }
-.geofs-ui-center .geofs-ui-right > div { opacity: 0.5; }
-.geofs-ui-center .geofs-ui-right > div.jobs-pad.open { opacity: 0.8; }
-
 .geofs-ui-right .jobs-pad {
     user-select: none;
     -webkit-user-select: none;
@@ -27,7 +22,7 @@
     border-radius: 40px;
 }
 
-.jobs-pad .jobs-window {
+.jobs-window {
     width: 400px;
     height: 600px;
     writing-mode: initial;
@@ -38,11 +33,13 @@
     background-color: #000;
     color: white;
     position: absolute;
-    right: -500px;
-    top: -200px;
     z-index: 100;
     cursor: default;
-    transition: right .2s ease-in-out;
+    transition: left .2s ease-in-out;
+    opacity: 0.8;
+}
+.jobs-window .mdl-tooltip {
+    display: none;
 }
 .jobs-window .jobs-title {
     margin: 4px;
@@ -55,6 +52,7 @@
     letter-spacing: -1px;
     overflow: hidden;
     height: 23px;
+    cursor: move;
 }
 
 .jobs-window .jobs-header {
@@ -191,7 +189,7 @@
     position: fixed;
     width: 360px;
     background: #404040;
-    padding: 0 8px;
+    padding: 0 7px 0 8px;
 }
 .list-jobs .list-header span {
     display: inline-block;
@@ -222,12 +220,14 @@
     padding: 2px;
     margin: 0 4px 0 -2px;
 }
-.list-jobs .list-header span:nth-child(1),
+.list-jobs .list-header span:nth-child(1){
+    width: 28%;
+}
 .list-jobs .job-entry-available .flightno {
     width: 30%;
 }
 .list-jobs .job-entry-available .dest:before {
-    content: '✈';
+    content: '✈︎';
     margin-right: 4px;
 }
 .list-jobs .list-header span:nth-child(2),
@@ -243,6 +243,9 @@
 .list-jobs .job-entry-available .actions {
     width: 25%;
     text-align: right;
+}
+.list-jobs .list-header span:nth-child(4) {
+    width: 22%;
 }
 
 .list-jobs .job-entry-available .actions button {

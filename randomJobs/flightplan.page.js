@@ -1,18 +1,18 @@
 'use strict';
 
 /**
- * @param {JobsWindow} jobsWindow
+ * @param {MainWindow} jobsWindow
  * @constructor
  */
-function FlightPage (jobsWindow) {
+function FlightplanPage (jobsWindow) {
     this.window = jobsWindow;
-    this.jobMngr = jobsWindow.jobMngr;
+    this.jobMngr = jobsWindow.mod;
 }
 
 /**
  * @param {HTMLElement} dom
  */
-FlightPage.prototype.populate = function(dom) {
+FlightplanPage.prototype.populate = function(dom) {
     this.buttonsDom = {
         resetFlight: dom.querySelector('#flight-reset'),
         cancelFlight: dom.querySelector('#flight-cancel'),
@@ -61,37 +61,46 @@ FlightPage.prototype.populate = function(dom) {
     }
 };
 
-FlightPage.prototype.finishFlight = function() {
+FlightplanPage.prototype.finishFlight = function() {
     this.jobMngr.flight.finishFlight();
     this.updateForm();
 };
 
-FlightPage.prototype.startFlight = function() {
+FlightplanPage.prototype.startFlight = function() {
     this.jobMngr.flight.startFlight();
     this.updateForm();
 };
 
-FlightPage.prototype.cancelFlight = function() {
+FlightplanPage.prototype.cancelFlight = function() {
     this.jobMngr.flight.cancelFlight();
     this.updateForm();
 };
 
-FlightPage.prototype.resetFlight = function() {
+FlightplanPage.prototype.resetFlight = function() {
     this.jobMngr.flight.resetFlight();
     this.updateForm();
     this.refreshDisplays();
 };
 
-FlightPage.prototype.handleInputChange = function(key) {
+FlightplanPage.prototype.handleInputChange = function(key) {
     const job = this.jobMngr.flight.getCurrent();
     if (job) {
-        job[key] = this.inputsDom[key].value.toLocaleUpperCase();
+        if (key=='depttime' || key=='arrvtime') {
+            let val = this.inputsDom[key].value.trim();
+            const match = val.match(/^(\d{2}):?(\d{0,2})$/);
+            if (match && match[1]) {
+                val = [match[1],((match[2]||'0')+'0').slice(0,2)].join(':');
+            } else
+                val = '';
+            this.inputsDom[key].value = job[key] = val;
+        } else
+            job[key] = this.inputsDom[key].value.toLocaleUpperCase();
         this.jobMngr.flight.sync();
     }
     this.updateForm();
 };
 
-FlightPage.prototype.windyPopup = function() {
+FlightplanPage.prototype.windyPopup = function() {
     const flight = this.jobMngr.flight.getCurrent();
     if (flight && flight.dest) {
         const coords = this.jobMngr.aHandler.getAirportCoords(flight.dest);
@@ -100,14 +109,14 @@ FlightPage.prototype.windyPopup = function() {
     }
 };
 
-FlightPage.prototype.buttonMask = function(bReset,bCancel,bStart,bFinish) {
+FlightplanPage.prototype.buttonMask = function(bReset, bCancel, bStart, bFinish) {
     bReset ?  $(this.buttonsDom.resetFlight).show() :  $(this.buttonsDom.resetFlight).hide();
     bCancel ? $(this.buttonsDom.cancelFlight).show() : $(this.buttonsDom.cancelFlight).hide();
     bStart ?  $(this.buttonsDom.startFlight).show() :  $(this.buttonsDom.startFlight).hide();
     bFinish ? $(this.buttonsDom.finishFlight).show() : $(this.buttonsDom.finishFlight).hide();
 };
 
-FlightPage.prototype.handleButtonVisibility = function(status) {
+FlightplanPage.prototype.handleButtonVisibility = function(status) {
     if (status == STATUS.PLANING || status == STATUS.FINISHED)
         this.buttonMask(1,0,1,0);
     else if (status == STATUS.ABORTED || status == STATUS.CRASHED)
@@ -117,7 +126,7 @@ FlightPage.prototype.handleButtonVisibility = function(status) {
 };
 
 const _endPhase = keyMap([STATUS.ARRIVAL,STATUS.DIVERTED,STATUS.ABORTED,STATUS.CRASHED]);
-FlightPage.prototype.handleActiveButtons = function() {
+FlightplanPage.prototype.handleActiveButtons = function() {
     const HINTS = {
         ready: 'Ready to depart!',
         finished: 'Ready to deboard!',
@@ -131,24 +140,24 @@ FlightPage.prototype.handleActiveButtons = function() {
         planPhase: 'Start planning flight first',
         completePhase: 'Complete flight phase first'
     };
-    const flight = this.jobMngr.flight;
+    const flightHandler = this.jobMngr.flight;
     const preventStartFlight = [];
     const preventFinishFlight = [];
 
-    const status = flight.getStatus();
+    const status = flightHandler.getStatus();
     if (status == STATUS.PLANING) {
-        if (!flight.hasDeparture()) {
+        if (!flightHandler.hasDeparture()) {
             preventStartFlight.push(HINTS.noDept);
             preventFinishFlight.push(HINTS.noDept);
-        } else if (flight.getDeparture() != this.jobMngr.currentAirport) {
+        } else if (flightHandler.getDeparture() != this.jobMngr.airport.icao) {
             preventStartFlight.push(HINTS.notAtDept);
         }
     }
 
-    if (!flight.hasDestination()) {
+    if (!flightHandler.hasDestination()) {
         preventStartFlight.push(HINTS.noDest);
         preventFinishFlight.push(HINTS.noDest);
-    } else if (flight.hasDestination() && (flight.getDestination() != this.jobMngr.currentAirport)) {
+    } else if (flightHandler.hasDestination() && (flightHandler.getDestination() != this.jobMngr.airport.icao)) {
         if (!_endPhase[status])
             preventFinishFlight.push(HINTS.notAtDest);
     }
@@ -183,7 +192,7 @@ FlightPage.prototype.handleActiveButtons = function() {
 };
 
 const _inputKeys = ['flightno', 'tailno', 'dept', 'dest', 'depttime', 'arrvtime'];
-FlightPage.prototype.updateForm = function() {
+FlightplanPage.prototype.updateForm = function() {
     const flight = this.jobMngr.flight.getCurrent();
     if (!flight) {
         _inputKeys.forEach(k => { this.inputsDom[k].value = '' });
@@ -215,7 +224,7 @@ FlightPage.prototype.updateForm = function() {
         this.destInfoDom.innerHTML = '';
 };
 
-FlightPage.prototype.updateAirlineInfo = function(icao) {
+FlightplanPage.prototype.updateAirlineInfo = function(icao) {
     if (icao.length == 3) {
         const aInfo = this.jobMngr.aHandler.getAInfo(icao);
         if (aInfo) {
@@ -233,7 +242,7 @@ FlightPage.prototype.updateAirlineInfo = function(icao) {
     }
 };
 
-FlightPage.prototype.updateDestinationInfo = function(icao) {
+FlightplanPage.prototype.updateDestinationInfo = function(icao) {
     const aInfo = this.jobMngr.aHandler.getAirportInfo(icao);
     let aName = this.jobMngr.aHandler.getAirportName(icao);
     let locinfo = '';
@@ -262,7 +271,7 @@ FlightPage.prototype.updateDestinationInfo = function(icao) {
 };
 
 const _displayKeys = ['depttimeActual','arrvtimeActual', 'speedAvg', 'traveled', 'delay', 'duration'];
-FlightPage.prototype.refreshDisplays = function() {
+FlightplanPage.prototype.refreshDisplays = function() {
     const flight = this.jobMngr.flight.getCurrent();
     const dDom = this.displaysDom;
     if (!flight || flight.status == STATUS.PLANING) {
@@ -283,7 +292,7 @@ FlightPage.prototype.refreshDisplays = function() {
     if (flight.delay) {
         const delay = Math.abs(flight.delay);
         dDom.delay.value = [zeroPad(Math.floor(delay/3600)), zeroPad(Math.round(delay/60)%60)].join(':');
-        dDom.delayLabel.nodeValue = flight.delay < -900 ? 'Delay' : (flight.delay > 0 ? 'Early' : 'On Time');
+        dDom.delayLabel.nodeValue = flight.delay < 0 ? 'Early' : (flight.delay > 900 ? 'Delay' : 'On Time');
     }
 
     const duration = flight.times.end ? flight.times.end-flight.times.start :
@@ -302,9 +311,10 @@ FlightPage.prototype.refreshDisplays = function() {
         dDom.arrvtimeActual.value = humanTime(endTime);
         dDom.arrvtimeActualLabel.nodeValue = 'Actual Arr';
 
-    } else if (flight.status == STATUS.AIRBORNE && avgSpeed) {
-        const estTime = Math.max(0,Math.round((flight.dist-flight.traveled)/avgSpeed));
-        const estDate = new Date((now()+estTime)*1000);
+    } else if (flight.status == STATUS.AIRBORNE && this.jobMngr.flight.getAvgAirspeed()) {
+        const estTime = Math.max(0,Math.round((flight.dist-flight.traveled)/this.jobMngr.flight.getAvgAirspeed()));
+        const taxiTime = flight.times.takeoff  ? flight.times.takeoff - flight.times.start : 0;
+        const estDate = new Date((now() + estTime + taxiTime)*1000);
         dDom.arrvtimeActual.value = humanTime(estDate);
         dDom.arrvtimeActualLabel.nodeValue = 'Estimated Arr';
     }
