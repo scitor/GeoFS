@@ -45,7 +45,7 @@ FlightHandler.prototype.getCurrent = function() {
 FlightHandler.prototype.setCurrent = function(info) {
     const id = (icao) => this.aHandler.getIcaoId(icao);
     if (!info.id)
-        info.id = id(info.dept)+''+id(info.dest)+''+now();
+        info.id = Date.now();
 
     if (!info.status)
         info.status = STATUS.PLANING;
@@ -61,14 +61,14 @@ FlightHandler.prototype.sync = function() {
     this.store.sync();
 };
 
-FlightHandler.prototype.hasDeparture = function() {
+FlightHandler.prototype.hasOrigin = function() {
     const flight = this.getCurrent();
-    return flight && flight.dept && flight.dept.length;
+    return flight && flight.orgn && flight.orgn.length;
 };
 
-FlightHandler.prototype.getDeparture = function() {
+FlightHandler.prototype.getOrigin = function() {
     const flight = this.getCurrent();
-    return flight && flight.dept;
+    return flight && flight.orgn;
 };
 
 FlightHandler.prototype.hasDestination = function() {
@@ -98,6 +98,7 @@ FlightHandler.prototype.finishFlight = function() {
 
     flight.status = STATUS.FINISHED;
     this.stopTracking();
+    this.archiveFlight();
 };
 
 FlightHandler.prototype.cancelFlight = function() {
@@ -119,6 +120,7 @@ FlightHandler.prototype.resetTracker = function() {
         groundTime: 0,
         airspeed: 0
     };
+    this.flightTape = [];
 };
 
 FlightHandler.prototype.stopTracking = function() {
@@ -160,6 +162,18 @@ FlightHandler.prototype.getAvgAirspeed = function() {
     return this.tracker && this.tracker.airspeed;
 };
 
+FlightHandler.prototype.archiveFlight = function() {
+    const flight = this.getCurrent();
+    if (!flight || !flight.id || !localStorage)
+        return;
+
+    const storage = new ObjectStore([this.store.storageKey, flight.id].join('_'));
+    storage.set('flight', flight);
+    storage.set('tape', this.flightTape);
+    if (geofs.api.map.flightPath)
+        storage.set('route', geofs.api.map.flightPath._latlngs.map((p,i) => [p.lat,p.lng]));
+};
+
 const _trackStatus = keyMap([STATUS.ONGROUND, STATUS.DEPARTURE, STATUS.AIRBORNE, STATUS.ARRIVAL, STATUS.ABORTED, STATUS.DIVERTED]);
 FlightHandler.prototype.update = function() {
     const flight = this.getCurrent();
@@ -181,6 +195,14 @@ FlightHandler.prototype.update = function() {
         tracker.airspeed = undefined;
         flight.taxiDist = (flight.taxiDist||0) + plane.groundSpeed;
     }
+    const flRecord = window.flight.recorder.makeRecord();
+    const tapeSample = ['time', 'coord', 'controls', 'state', 'velocities', 'accelerations'].reduce((p, c) => {
+        p.push(flRecord[c]);
+        return p;
+    }, []);
+    tapeSample[3][0] = tapeSample[3][0] ? 1 : 0;
+    tapeSample[3][1] = tapeSample[3][1] ? 1 : 0;
+    this.flightTape.push(tapeSample);
 
     switch (flight.status) {
         case STATUS.ONGROUND:
@@ -202,7 +224,7 @@ FlightHandler.prototype.update = function() {
             if (icao) {
                 if (icao == flight.dest) {
                     flight.status = STATUS.ARRIVAL;
-                } else if (icao == flight.dept) {
+                } else if (icao == flight.orgn) {
                     flight.status = STATUS.ABORTED;
                 } else {
                     flight.status = STATUS.DIVERTED;

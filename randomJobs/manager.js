@@ -3,7 +3,7 @@
 /**
 * @typedef {Object} JobObj
 * @property {number} id
-* @property {string} dept departure ICAO
+* @property {string} orgn origin ICAO
 * @property {string} dest destination ICAO
 * @property {string} flightno number
 * @property {string} airline ICAO
@@ -35,7 +35,7 @@ function RandomJobsMod(aList, aIndex, version) {
 
     /** @type {MainWindow} */
     this.window = null;
-    this.store = new ObjectStore('randomJobsV1');
+    this.store = new ObjectStore('RJFlightV1');
     this.aHandler = new AirportHandler(this);
     this.flight = new FlightHandler(this);
     this.generator = new JobGenerator(this);
@@ -70,7 +70,7 @@ RandomJobsMod.prototype.init = function(getCustomData, ready) {
 RandomJobsMod.prototype.update = function() {
     this.updateCurrentAirport();
     this.flight.update();
-    this.window.update();
+    this.window && this.window.update();
 };
 
 RandomJobsMod.prototype.updateCurrentAirport = function() {
@@ -89,7 +89,7 @@ RandomJobsMod.prototype.updateCurrentAirport = function() {
         this.airport.nearby = {};
         this.airport.jobs = [];
     }
-    if (icao !== this.last.icao)
+    if ((icao !== this.last.icao) && this.window)
         this.window.reloadJobsList();
     this.last.icao = icao;
     this.last.time = now();
@@ -97,6 +97,31 @@ RandomJobsMod.prototype.updateCurrentAirport = function() {
 
 RandomJobsMod.prototype.getIcao = function() {
     return this.airport.icao;
+};
+
+RandomJobsMod.prototype.getFlightTape = function(key) {
+    const store = new ObjectStore(key);
+    if (!store)
+        return;
+
+    return store.get('tape');
+};
+
+RandomJobsMod.prototype.getFlightRoute = function(key) {
+    const store = new ObjectStore(key);
+    if (!store)
+        return;
+
+    return store.get('route');
+};
+
+RandomJobsMod.prototype.removeHistoryEntry = function(key) {
+    ObjectStore.removeStorageByKey(key);
+};
+
+RandomJobsMod.prototype.getHistory = function() {
+    const keys = ObjectStore.listStorageKeys('^'+this.store.storageKey+'_').sort().reverse();
+    return keys.map(key => Object.assign({key},(new ObjectStore(key)).get('flight')));
 };
 
 RandomJobsMod.prototype.getJobsList = function() {

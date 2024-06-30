@@ -7,6 +7,7 @@ const aIndex = aList.map(sList => new Index(sList));
 const convert = {
     celsiusToFahrenheit: c => c * 1.8 + 32,
     feetToMeters: ft => ft * 0.3048,
+    metersToFeet: m => m / 0.3048,
     milesToMeters: mi => mi * 1609.344,
     metersToMiles: m => m / 1609.344,
     kmToNm: km => km / 1.852,
@@ -60,7 +61,8 @@ function appendNewChild(parent, tagName, attributes = {}, pos = -1) {
 /**
  * Mulberry32 - Random Number Generator
  *
- * A simple generator with a 32-bit state, but is extremely fast and has good quality (author states it passes all tests of gjrand testing suite and has a full 232 period, but I haven't verified).
+ * A simple generator with a 32-bit state, but is extremely fast and has good quality (author states it passes all
+ * tests of gjrand testing suite and has a full 232 period, but I haven't verified).
  *
  * @link https://stackoverflow.com/a/47593316
  *
@@ -83,6 +85,9 @@ function zeroPad(int) {
 }
 function humanTime(date) {
     return [zeroPad(date.getHours()),zeroPad(date.getMinutes())].join(':');
+}
+function humanDate(date) {
+    return [date.getFullYear(),zeroPad(date.getMonth()+1),zeroPad(date.getDate())].join('-');
 }
 
 function keyMap(array) {
@@ -153,7 +158,7 @@ Index.prototype.nearby = function (coords, dist) {
                 lLng -= 360;
             }
             if (this.index.has(iLat) && this.index.get(iLat).has(lLng)) {
-                grid = grid.union(this.index.get(iLat).get(lLng));
+                grid = new Set([...grid, ...this.index.get(iLat).get(lLng)]);
             }
         }
     }
@@ -169,43 +174,43 @@ Index.prototype.dist = function (lat1, lng1, lat2, lng2) {
     return geofs.api.map._map.distance({lat: lat1, lng: lng1}, {lat: lat2, lng: lng2});
 };
 
-// stolen from https://gist.github.com/samsonjs/716858
-const _ObjectStore = {};
 /**
- * @param {string} table
+ * @param {string} storageKey
  * @constructor
  */
-function ObjectStore(table) {
-    if (localStorage === undefined)
-        localStorage = { setItem:(key, val) => {}, getItem:(key) => {} };
-
-    const jsonString = localStorage.getItem(table);
-    if (jsonString !== undefined) {
-        try {
-            _ObjectStore[table] = JSON.parse(jsonString||'');
-        } catch (e) {}
+function ObjectStore(storageKey) {
+    if (localStorage === undefined) {
+        localStorage = {
+            setItem:(key, val) => {},
+            getItem:(key) => {},
+            removeItem: (key) => {},
+            length:0
+        };
     }
-    if (!_ObjectStore[table])
-        _ObjectStore[table] = {};
+    const jsonString = localStorage.getItem(storageKey);
+    const object = JSON.parse(jsonString || '{}');
 
-    const object = _ObjectStore[table];
+    /**
+     * @type {string}
+     */
+    this.storageKey = storageKey;
 
     /**
      * @param {string} key
      * @returns {boolean}
      */
-    this.has = key => object[key] !== undefined;
+    this.has = (key) => object[key] !== undefined;
 
     /**
      * @param {string} key
      * @returns {Object|null}
      */
-    this.get = key => object[key];
+    this.get = (key) => object[key];
 
     /**
      * Sync storage
      */
-    this.sync = () => localStorage.setItem(table, JSON.stringify(object));
+    this.sync = () => localStorage.setItem(storageKey, JSON.stringify(object));
 
     /**
      * @param {string} key
@@ -223,4 +228,25 @@ function ObjectStore(table) {
         delete object[key];
         this.sync();
     };
+
+    /**
+     * @param {string} regex
+     * @returns {Array<string>}
+     */
+    ObjectStore.listStorageKeys = function (regex) {
+        let i, ret = [];
+        for (i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (!regex || (''+key).match(regex))
+                ret.push(key);
+        }
+        return ret;
+    };
+
+    /**
+     * @param {string} key
+     */
+    ObjectStore.removeStorageByKey = function (key) {
+        localStorage.removeItem(key);
+    }
 }

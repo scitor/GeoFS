@@ -8,12 +8,12 @@
   <ul>
     <li data-id="flight">Flight</li>
     <li data-id="jobs">Airport</li>
-    <li data-id="history">Career</li>
+    <li data-id="career">Career</li>
     <li data-id="config">Config</li>
   </ul>
 </div>
 <div class="jobs-content">
-  <div class="list-jobs" style="display: none;">
+  <div class="page-jobs flights-list" style="display: none;">
     <div class="list-header">
       <span>Airline / Flight</span>
       <span>Destination</span>
@@ -23,7 +23,7 @@
     <ul></ul>
     <input type="button" value="load Flights" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
   </div>
-  <div class="list-flight" style="display: none;">
+  <div class="page-flight" style="display: none;">
     <ul>
       <li>
         <div class="tailno-input">Tail #<input type="text" id="flight-tailnumber"></div>
@@ -31,7 +31,7 @@
         <div class="airline-info"><span></span></div>
       </li>
       <li>
-        <div class="departure-input">Origin<input type="text" placeholder="ICAO" id="flight-departure-icao"></div>
+        <div class="origin-input">Origin<input type="text" placeholder="ICAO" id="flight-origin-icao"></div>
         <div class="destination-input">Destination<input type="text" placeholder="ICAO" id="flight-destination-icao"></div>
         <div class="destination-info f16"></div>
       </li>
@@ -55,7 +55,16 @@
       <li class="flight-status-graph"></li>
     </ul>
   </div>
-  <div class="list-history" style="display: none;"><ul><li>INOP</li></ul></div>
-  <div class="list-config" style="display: none;"><ul><li>INOP</li></ul></div>
+  <div class="page-career flights-list" style="display: none;">
+      <div class="list-header">
+        <span>Airline / Flight</span>
+        <span>Destination</span>
+        <span>Traveled</span>
+        <span>☐</span>
+      </div>
+      <ul></ul>
+  </div>
+  <div class="page-config" style="display: none;"><ul><li>INOP</li></ul></div>
+  <div class="page-credits" style="display: none;"><ul><li>INOP</li></ul></div>
 </div>
-<span class="jobs-footer"></span>
+<span class="jobs-footer" data-id="credits"></span>

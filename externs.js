@@ -25,7 +25,10 @@ var geofs = {
     randomJobs: {}
 };
 var weather;
-var flight;
+var flight = {
+  recorder: {
+    makeRecord: function() {}
+  }};
 var ui = {
     panel: {
         show: function () {

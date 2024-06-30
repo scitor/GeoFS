@@ -1,12 +1,12 @@
 'use strict';
 
 /**
- * @param {MainWindow} jobsWindow
+ * @param {MainWindow} mainWindow
  * @constructor
  */
-function FlightplanPage (jobsWindow) {
-    this.window = jobsWindow;
-    this.jobMngr = jobsWindow.mod;
+function FlightplanPage (mainWindow) {
+    this.window = mainWindow;
+    this.jobMngr = mainWindow.mod;
 }
 
 /**
@@ -23,7 +23,7 @@ FlightplanPage.prototype.populate = function(dom) {
     this.inputsDom = {
         flightno: dom.querySelector('#flight-number'),
         tailno: dom.querySelector('#flight-tailnumber'),
-        dept: dom.querySelector('#flight-departure-icao'),
+        orgn: dom.querySelector('#flight-origin-icao'),
         dest: dom.querySelector('#flight-destination-icao'),
         depttime: dom.querySelector('#flight-departure-scheduled'),
         arrvtime: dom.querySelector('#flight-arrival-scheduled'),
@@ -46,7 +46,11 @@ FlightplanPage.prototype.populate = function(dom) {
     this.destInfoDom.onclick = () => this.windyPopup();
 
     Object.keys(this.inputsDom).forEach(k => {
-        this.inputsDom[k].onchange = () => this.handleInputChange(k);
+        const dom = this.inputsDom[k];
+        dom.onchange = () => this.handleInputChange(k);
+        dom.setAttribute('autocomplete','off');
+        dom.setAttribute('aria-autocomplete','off');
+        dom.setAttribute('list','autocompleteOff');
     });
 
     this.buttonsDom.resetFlight.onclick = () => this.resetFlight();
@@ -130,9 +134,9 @@ FlightplanPage.prototype.handleActiveButtons = function() {
     const HINTS = {
         ready: 'Ready to depart!',
         finished: 'Ready to deboard!',
-        noDept: 'No departure entered!',
+        noDept: 'No origin entered!',
         noDest: 'No destination entered!',
-        notAtDept: 'Not at departure airport!',
+        notAtDept: 'Not at origin airport!',
         notAtDest: 'Not at destination airport!',
         airborne: 'Still airborne!',
         moving: 'Airplane moving!',
@@ -146,10 +150,10 @@ FlightplanPage.prototype.handleActiveButtons = function() {
 
     const status = flightHandler.getStatus();
     if (status == STATUS.PLANING) {
-        if (!flightHandler.hasDeparture()) {
+        if (!flightHandler.hasOrigin()) {
             preventStartFlight.push(HINTS.noDept);
             preventFinishFlight.push(HINTS.noDept);
-        } else if (flightHandler.getDeparture() != this.jobMngr.airport.icao) {
+        } else if (flightHandler.getOrigin() != this.jobMngr.airport.icao) {
             preventStartFlight.push(HINTS.notAtDept);
         }
     }
@@ -191,7 +195,7 @@ FlightplanPage.prototype.handleActiveButtons = function() {
     this.buttonsDom.finishFlight.disabled = preventFinishFlight.length > 0;
 };
 
-const _inputKeys = ['flightno', 'tailno', 'dept', 'dest', 'depttime', 'arrvtime'];
+const _inputKeys = ['flightno', 'tailno', 'orgn', 'dest', 'depttime', 'arrvtime'];
 FlightplanPage.prototype.updateForm = function() {
     const flight = this.jobMngr.flight.getCurrent();
     if (!flight) {

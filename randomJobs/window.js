@@ -49,6 +49,7 @@ MainWindow.prototype.populate = function(tpl) {
     };
     this.footerDom = this.jobsWindowDom.querySelector('.jobs-footer');
     this.footerDom.innerHTML = 'Random Jobs v' + this.mod.version;
+    this.footerDom.onclick = (e) => this.handleMainMenu(e);
 
     this.mainMenuDom = this.jobsWindowDom.querySelector('.jobs-menu');
     this.mainMenuDom.onclick = (e) => this.handleMainMenu(e);
@@ -56,19 +57,33 @@ MainWindow.prototype.populate = function(tpl) {
     this.contentDom = this.jobsWindowDom.querySelector('.jobs-content');
 
     this.jobsPage = new AirportPage(this);
-    this.jobsPage.populate(this.contentDom.querySelector('.list-jobs'));
+    this.jobsPage.populate(this.contentDom.querySelector('.page-jobs'));
 
     this.flightPage = new FlightplanPage(this);
-    this.flightPage.populate(this.contentDom.querySelector('.list-flight'));
+    this.flightPage.populate(this.contentDom.querySelector('.page-flight'));
+
+    this.careerPage = new CareerPage(this);
+    this.careerPage.populate(this.contentDom.querySelector('.page-career'));
 
     this.headerDom.metar.onclick = () => this.windyPopup();
-    this.makeDraggable(this.headerDom.title, this.jobsWindowDom);
+    this.makeDraggable(this.headerDom.title);
+    this.makeScalable(this.headerDom.title);
+    this.makeScalable(this.footerDom);
 
     this.populated = true;
 };
 
-MainWindow.prototype.makeDraggable = function(header, win) {
-    const offset = [0,0];
+let scale = 1;
+MainWindow.prototype.makeScalable = function(header) {
+    const win = this.jobsWindowDom;
+    header.onwheel = (e) => {
+        scale = Math.min(1, Math.max(0.5, scale + (e.deltaY < 0 ? 0.1 : -0.1)));
+        win.style.scale = scale;
+    };
+};
+
+MainWindow.prototype.makeDraggable = function(header) {
+    const offset = [0,0], win = this.jobsWindowDom;
     header.onmousedown = (e) => {
         e.preventDefault();
         offset[0] = e.clientX - win.offsetLeft;
@@ -133,7 +148,7 @@ MainWindow.prototype.handleMainMenu = function(e) {
     const buttonDom = e.target;
     const menuId = buttonDom.dataset.id;
     this.contentDom.querySelectorAll(':scope > div').forEach(div => {
-        const active = div.classList.contains('list-'+menuId);
+        const active = div.classList.contains('page-'+menuId);
         div.style.display = active ? '' : 'none';
     });
     this.mainMenuDom.querySelectorAll('ul > li').forEach(li => {
@@ -146,7 +161,7 @@ MainWindow.prototype.handleMainMenu = function(e) {
     switch (menuId){
         case 'jobs': this.jobsPage.reloadList(); break;
         case 'flight': this.flightPage.updateForm(); break;
-        // @todo case 'career': this.loadCareerList(); break;
+        case 'career': this.careerPage.reloadList(); break;
         // @todo case 'config': this.loadConfigList(); break;
     }
 };

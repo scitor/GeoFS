@@ -5,8 +5,8 @@
     height: 80px;
     border-radius: 40px;
     outline: none;
-    position: absolute;
-    margin: -160px 0 160px 0;
+    /*position: absolute;*/
+    /*margin: -160px 0 160px 0;*/
     text-orientation: upright;
     writing-mode: vertical-rl;
     letter-spacing: -2px;
@@ -60,6 +60,7 @@
     margin: 0 4px 4px;
     padding: 10px;
     height: 70px;
+    overflow: hidden;
 }
 .jobs-window .jobs-header p {
     margin: 0;
@@ -87,6 +88,7 @@
     text-align: center;
     width: 100%;
     color: #FFFFFF80;
+    cursor: help;
 }
 
 .jobs-window .jobs-menu {
@@ -121,23 +123,23 @@
     padding: 4px;
 }
 
-.jobs-window .list-flight input[type=text] {
+.jobs-window .page-flight input[type=text] {
     font-family: monospace;
 }
 
-.list-flight .flight-controls input:active:hover,
-.list-flight .flight-controls input:focus:hover,
-.list-flight .flight-controls input:hover,
-.jobs-content .list-jobs input:active:hover,
-.jobs-content .list-jobs input:focus:hover,
-.jobs-content .list-jobs input:hover {
+.page-flight .flight-controls input:active:hover,
+.page-flight .flight-controls input:focus:hover,
+.page-flight .flight-controls input:hover,
+.jobs-content .page-jobs input:active:hover,
+.jobs-content .page-jobs input:focus:hover,
+.jobs-content .page-jobs input:hover {
     background-color: slategrey;
 }
 
-.jobs-content .list-jobs input:focus,
-.jobs-content .list-jobs input:active,
-.jobs-content .list-jobs input:focus:not(:active),
-.jobs-content .list-jobs input {
+.jobs-content .page-jobs input:focus,
+.jobs-content .page-jobs input:active,
+.jobs-content .page-jobs input:focus:not(:active),
+.jobs-content .page-jobs input {
     background-color: #404040;
     color: white;
     width: 80%;
@@ -146,138 +148,142 @@
     padding: 0;
 }
 
-.list-flight .flight-controls input:focus,
-.list-flight .flight-controls input:active,
-.list-flight .flight-controls input:focus:not(:active),
-.list-flight .flight-controls input {
+.page-flight .flight-controls input:focus,
+.page-flight .flight-controls input:active,
+.page-flight .flight-controls input:focus:not(:active),
+.page-flight .flight-controls input {
     background-color: #404040;
     color: white;
 }
 
-.list-flight li .tailno-input,
-.list-flight li .flightno-input,
-.list-flight li .departure-input,
-.list-flight li .destination-input,
-.list-flight li .sched-dep-input,
-.list-flight li .sched-arr-input,
-.list-flight li .delay-info,
-.list-flight li .flighttime-info,
-.list-flight li .traveled-info,
-.list-flight li .departure-info,
-.list-flight li .arrival-info,
-.list-flight li .speed-info {
+.page-flight li .tailno-input,
+.page-flight li .flightno-input,
+.page-flight li .origin-input,
+.page-flight li .destination-input,
+.page-flight li .sched-dep-input,
+.page-flight li .sched-arr-input,
+.page-flight li .delay-info,
+.page-flight li .flighttime-info,
+.page-flight li .traveled-info,
+.page-flight li .departure-info,
+.page-flight li .arrival-info,
+.page-flight li .speed-info {
     color: silver;
 }
 
-.list-jobs {
+.flights-list {
     overflow: hidden scroll;
     height: 100%;
 }
-.list-jobs::-webkit-scrollbar-thumb:hover {
+.flights-list::-webkit-scrollbar-thumb:hover {
     background-color: slategray;
 }
 
-.list-jobs::-webkit-scrollbar-thumb {
+.flights-list::-webkit-scrollbar-thumb {
     background-color: #404040;
 }
-.list-jobs::-webkit-scrollbar,
-.list-jobs::-webkit-scrollbar-track {
+.flights-list::-webkit-scrollbar,
+.flights-list::-webkit-scrollbar-track {
     background-color: #FFFFFF00;
 }
-.list-jobs .list-header {
+.flights-list .list-header {
     line-height: 28px;
     position: fixed;
     width: 360px;
     background: #404040;
     padding: 0 7px 0 8px;
 }
-.list-jobs .list-header span {
+.flights-list .list-header span {
     display: inline-block;
     margin: 0;
     padding: 0
 }
-.list-jobs ul {
+.flights-list ul {
     margin: 30px 0 0 0;
     padding: 0;
     line-height: 30px;
 }
-.list-jobs ul li:nth-child(even) {
+.flights-list ul li:nth-child(even) {
     background: #FFFFFF20;
 }
-.list-jobs ul li:nth-child(odd) {
+.flights-list ul li:nth-child(odd) {
     background: #FFFFFF40;
 }
-.list-jobs .job-entry-available {
+.flights-list ul li.date-entry {
+    background: none;
+}
+.flights-list .date-entry,
+.flights-list .list-entry {
     list-style: none;
     font-size: 16px;
     padding: 0 4px;
 }
-.list-jobs .job-entry-available div {
+.flights-list .list-entry div {
     display: inline-block;
 }
-.list-jobs .job-entry-available div img {
+.flights-list .list-entry div img {
     background-color: white;
     padding: 2px;
     margin: 0 4px 0 -2px;
 }
-.list-jobs .list-header span:nth-child(1){
+.flights-list .list-header span:nth-child(1){
     width: 28%;
 }
-.list-jobs .job-entry-available .flightno {
+.flights-list .list-entry .flightno {
     width: 30%;
 }
-.list-jobs .job-entry-available .dest:before {
+.flights-list .list-entry .dest:before {
     content: '✈︎';
     margin-right: 4px;
 }
-.list-jobs .list-header span:nth-child(2),
-.list-jobs .job-entry-available .dest {
+.flights-list .list-header span:nth-child(2),
+.flights-list .list-entry .dest {
     width: 25%;
 }
-.list-jobs .list-header span:nth-child(3),
-.list-jobs .job-entry-available .dist {
+.flights-list .list-header span:nth-child(3),
+.flights-list .list-entry .dist {
     width: 20%;
     text-align: right;
 }
-.list-jobs .list-header span:nth-child(4),
-.list-jobs .job-entry-available .actions {
+.flights-list .list-header span:nth-child(4),
+.flights-list .list-entry .actions {
     width: 25%;
     text-align: right;
 }
-.list-jobs .list-header span:nth-child(4) {
+.flights-list .list-header span:nth-child(4) {
     width: 22%;
 }
 
-.list-jobs .job-entry-available .actions button {
+.flights-list .list-entry .actions button {
     cursor: pointer;
 }
 
-.list-jobs .actions .mdl-button--icon {
+.flights-list .actions .mdl-button--icon {
     background: none;
     display: inline-block;
     vertical-align: middle;
     border: 0;
     height: 24px
 }
-.list-jobs .actions .mdl-button--icon .material-icons {
+.flights-list .actions .mdl-button--icon .material-icons {
     position: initial;
     transform: initial;
     font-size: 24px;
 }
 
-.list-flight ul {
+.page-flight ul {
     padding: 0;
     margin: 0;
 }
 
-.list-flight li {
+.page-flight li {
     margin: 0 0 3px;
     padding: 0;
     display: flex;
     gap: 3px;
 }
 
-.list-flight li div {
+.page-flight li div {
     display: inline-block;
     flex-basis: 20%;
     flex-grow: 1;
@@ -287,7 +293,7 @@
     border-radius: 4px;
 }
 
-.list-flight li div input {
+.page-flight li div input {
     background: none;
     border: none;
     width: 100%;
@@ -301,46 +307,46 @@
     letter-spacing: -1px;
 }
 
-.list-flight li div input[type=time] {
+.page-flight li div input[type=time] {
     height: 28px;
 }
 
-.list-flight li div input[type=time]::-webkit-calendar-picker-indicator {
+.page-flight li div input[type=time]::-webkit-calendar-picker-indicator {
     display: none;
 }
 
-.list-flight li .delay-info,
-.list-flight li .flighttime-info,
-.list-flight li .traveled-info,
-.list-flight li .departure-info,
-.list-flight li .arrival-info,
-.list-flight li .airline-info,
-.list-flight li .destination-info,
-.list-flight li .speed-info {
+.page-flight li .delay-info,
+.page-flight li .flighttime-info,
+.page-flight li .traveled-info,
+.page-flight li .departure-info,
+.page-flight li .arrival-info,
+.page-flight li .airline-info,
+.page-flight li .destination-info,
+.page-flight li .speed-info {
     background-color: #ffffff20;
 }
 
-.list-flight li .destination-info,
-.list-flight li .airline-info {
+.page-flight li .destination-info,
+.page-flight li .airline-info {
     flex-basis: 45%;
     line-height: 20px;
     font-size: 20px;
     padding: 4px;
 }
-.list-flight li .destination-info {
+.page-flight li .destination-info {
     line-height: 14px;
     font-size: 14px;
     padding: 2px 4px;
     cursor: help;
 }
-.list-flight li .airline-info {
+.page-flight li .airline-info {
     text-align: right;
 }
 
-.list-flight li .destination-info small {
+.page-flight li .destination-info small {
     line-height: 12px;
 }
-.list-flight li .airline-info img {
+.page-flight li .airline-info img {
     width: 24px;
     float: right;
     background-color: white;
@@ -350,18 +356,18 @@
     margin: -4px -4px 0 4px;
 }
 
-.list-flight .flight-controls {
+.page-flight .flight-controls {
     flex-wrap: wrap;
     justify-content: space-evenly;
 }
-.list-flight .flight-controls .mdl-button--raised {
+.page-flight .flight-controls .mdl-button--raised {
     width: 194px;
 }
-.list-flight .flight-controls .mdl-button--raised[disabled][disabled] {
+.page-flight .flight-controls .mdl-button--raised[disabled][disabled] {
     background-color: #ffffff20;
     color: white;
 }
-.list-flight .flight-status {
+.page-flight .flight-status {
     height: 30px;
     background: #FFFFFF20;
     text-align: center;

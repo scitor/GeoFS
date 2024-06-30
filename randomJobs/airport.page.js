@@ -1,13 +1,12 @@
 'use strict';
 
 /**
- * @param {MainWindow} window
+ * @param {MainWindow} mainWindow
  * @constructor
  */
-function AirportPage(window) {
-    this.jobsWindow = window;
-    this.mod = window.mod;
-
+function AirportPage(mainWindow) {
+    this.window = mainWindow;
+    this.mod = mainWindow.mod;
 }
 
 /**
@@ -53,7 +52,7 @@ AirportPage.prototype.reloadList = function() {
     this.dom.list.innerHTML = '';
     const jobsList = this.mod.getJobsList();
     jobsList.forEach(job => {
-        const jobDom = appendNewChild(this.dom.list, 'li', {class:'job-entry-available'});
+        const jobDom = appendNewChild(this.dom.list, 'li', {class:'list-entry'});
 
         let src = `${githubRepo}/randomJobs/airline.png`;
         if (job.regional) {
@@ -76,7 +75,7 @@ AirportPage.prototype.reloadList = function() {
         actionMapDom.onclick = () => {
             geofs.api.map.clearPath();
             geofs.api.map.setPathPoints([
-                this.mod.aHandler.getAirportCoords(job.dept),
+                this.mod.aHandler.getAirportCoords(job.orgn),
                 this.mod.aHandler.getAirportCoords(job.dest)
             ]);
             geofs.api.map.stopCreatePath();
@@ -86,7 +85,7 @@ AirportPage.prototype.reloadList = function() {
         actionPlanDom.appendChild(createTag('i',{class:'material-icons'},'airplane_ticket'));
         actionPlanDom.onclick = () => {
             this.mod.flight.setCurrent(Object.assign({},job));
-            this.jobsWindow.mainMenuDom.querySelector('li[data-id=flight]').click();
+            this.window.mainMenuDom.querySelector('li[data-id=flight]').click();
         };
     });
 };

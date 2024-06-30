@@ -18,8 +18,8 @@ JobGenerator.prototype.chance = function(percent) {
 JobGenerator.prototype.randomEl = function (array) {
     return array[Math.floor(this.rng() * array.length)];
 };
-JobGenerator.prototype.hasJob = function(dept, dest, airline) {
-    return this.airport.jobs.find(job => job.dept == dept && job.dest == dest && job.airline == airline);
+JobGenerator.prototype.hasJob = function(orgn, dest, airline) {
+    return this.airport.jobs.find(job => job.orgn == orgn && job.dest == dest && job.airline == airline);
 };
 JobGenerator.prototype.generateJob = function() {
     const job = this.generateAirlineJob() || this.generateRegionalJob();
@@ -73,12 +73,12 @@ JobGenerator.prototype.generateRegionalJob = function() {
     }
 };
 /**
- * @param {string} dept
+ * @param {string} orgn
  * @param {string} dest
  * @param {string} airline
  * @returns {JobObj}
  */
-JobGenerator.prototype.createJobObj = function(dept, dest, airline=undefined) {
+JobGenerator.prototype.createJobObj = function(orgn, dest, airline=undefined) {
     let flightno, regional = true;
     if (airline) {
         const aInfo = this.aHandler.getAInfo(airline);
@@ -88,6 +88,6 @@ JobGenerator.prototype.createJobObj = function(dept, dest, airline=undefined) {
         airline = String.fromCharCode(Math.round(this.rng(25,65)));
         flightno = airline+'-'+Math.round(Math.sqrt(this.rng(1e4)));
     }
-    const dist = this.aHandler.getAirportDist(dept, dest);
-    return {flightno, regional, dist, dept, dest, airline};
+    const dist = this.aHandler.getAirportDist(orgn, dest);
+    return {flightno, regional, dist, orgn, dest, airline};
 };

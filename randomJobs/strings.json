@@ -1,0 +1,53 @@
+{
+  "HTML": {
+    "Menu": {
+      "Flight": "Flight",
+      "Jobs": "Jobs",
+      "Career": "Career",
+      "Config": "Config"
+    },
+    "FlightPlan": {
+      "TailNumber": "Tail #",
+      "FlightNumber": "Flight #",
+      "Origin": "Origin",
+      "Destination": "Destination",
+      "Departure": "Departure",
+      "Arrival": "Arrival",
+      "OnTime": "On Time",
+      "Delay": "Delay",
+      "Early": "Early",
+      "SpeedAvg": "GS kts",
+      "ActualDep": "Actual Dep",
+      "ActualArr": "Actual Arr",
+      "EstimArr": "Estimated Arr",
+      "CurrentTime": "Current Time",
+      "Duration": "Duration",
+      "DurationAir": "Duration (air)",
+      "Traveled": "Traveled NM"
+    },
+    "JobsList": {
+      "AirlineFlight": "Airline / Flight",
+      "Destination": "Destination",
+      "Distance": "Distance"
+    }
+  },
+  "window": {
+  },
+  "FlightPlan": {
+    "HINTS": {
+      "ready": "Ready for departure!",
+      "finished": "Ready to deboard!",
+      "noDept": "No origin entered!",
+      "noDest": "No destination entered!",
+      "notAtDept": "Not at origin airport!",
+      "notAtDest": "Not at destination airport!",
+      "airborne": "Still airborne!",
+      "moving": "Airplane moving!",
+      "parkingBrake": "Parking brake not set!",
+      "planPhase": "Start planning flight first",
+      "completePhase": "Complete flight phase first"
+    },
+    "airportInfoWeather": "{aIcao} inHg:{inHg} ({fltCat})",
+    "airportInfo": "{aIcao}"
+  }
+}
