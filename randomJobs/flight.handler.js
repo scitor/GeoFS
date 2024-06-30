@@ -174,6 +174,17 @@ FlightHandler.prototype.archiveFlight = function() {
         storage.set('route', geofs.api.map.flightPath._latlngs.map((p,i) => [p.lat,p.lng]));
 };
 
+FlightHandler.prototype.tapeRecord = function() {
+    const flRecord = window.flight.recorder.makeRecord();
+    const tapeSample = ['time', 'coord', 'controls', 'state', 'velocities', 'accelerations'].reduce((p, c) => {
+        p.push(flRecord[c]);
+        return p;
+    }, []);
+    tapeSample[3][0] = tapeSample[3][0] ? 1 : 0;
+    tapeSample[3][1] = tapeSample[3][1] ? 1 : 0;
+    this.flightTape.push(tapeSample);
+};
+
 const _trackStatus = keyMap([STATUS.ONGROUND, STATUS.DEPARTURE, STATUS.AIRBORNE, STATUS.ARRIVAL, STATUS.ABORTED, STATUS.DIVERTED]);
 FlightHandler.prototype.update = function() {
     const flight = this.getCurrent();
@@ -195,14 +206,8 @@ FlightHandler.prototype.update = function() {
         tracker.airspeed = undefined;
         flight.taxiDist = (flight.taxiDist||0) + plane.groundSpeed;
     }
-    const flRecord = window.flight.recorder.makeRecord();
-    const tapeSample = ['time', 'coord', 'controls', 'state', 'velocities', 'accelerations'].reduce((p, c) => {
-        p.push(flRecord[c]);
-        return p;
-    }, []);
-    tapeSample[3][0] = tapeSample[3][0] ? 1 : 0;
-    tapeSample[3][1] = tapeSample[3][1] ? 1 : 0;
-    this.flightTape.push(tapeSample);
+    this.tapeRecord();
+    setTimeout(()=>this.tapeRecord(),500);
 
     switch (flight.status) {
         case STATUS.ONGROUND:
