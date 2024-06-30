@@ -128,7 +128,7 @@ CareerPage.prototype.actionDownloadFlightTape = function(entry) {
     const flightTape = this.mod.getFlightTape(entry.key);
     const dataJson = JSON.stringify(flightTape, (_, value) => (typeof value === 'number') ? parseFloat(value.toFixed(6)) : value);
     const dataURI = 'data:text/json;charset=utf-8,' + encodeURIComponent(dataJson);
-    const filename = [humanDate(new Date(entry.times.start * 1000))];
+    const filename = ['GeoFS-tape', humanDate(new Date(entry.times.start * 1000))];
     if (entry.flightno)
         filename.push(entry.flightno);
     filename.push(entry.orgn);
@@ -181,7 +181,7 @@ CareerPage.prototype.actionDownloadGPX = function(entry, duration) {
     }
 
     const dataURI = 'data:text/xml;charset=utf-8,' + encodeURIComponent('<?xml version="1.0" encoding="utf-8"?>'+xmlDoc.innerHTML);
-    const filename = [humanDate(new Date(entry.times.start * 1000))];
+    const filename = ['GeoFS-flight', humanDate(new Date(entry.times.start * 1000))];
     if (entry.flightno)
         filename.push(entry.flightno);
     filename.push(entry.orgn);

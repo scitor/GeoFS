@@ -68,6 +68,7 @@ RandomJobsMod.prototype.init = function(getCustomData, ready) {
     });
 };
 RandomJobsMod.prototype.update = function() {
+    if (flight.recorder.playing) return;
     this.updateCurrentAirport();
     this.flight.update();
     this.window && this.window.update();
