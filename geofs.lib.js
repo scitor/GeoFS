@@ -261,6 +261,16 @@ function IndexedDB(def) {
     request.onupgradeneeded = (event) => {
         this.db = event.target.result;
         Object.keys(def.stores).forEach(key => this.db.objectStoreNames.contains(key) || this.db.createObjectStore(key, def.stores[key]));
+        // migrate history
+        const keys = ObjectStore.listStorageKeys('^RJFlightV1_').sort().reverse();
+        keys.forEach(key => {
+            const oldStore = new ObjectStore(key);
+            const flight = oldStore.get('flight');
+            this.set('flights', flight);
+            this.set('tapes', {id:flight.id,tape:oldStore.get('tape')});
+            this.set('routes', {id:flight.id,route:oldStore.get('route')});
+            ObjectStore.removeStorageByKey(key);
+        });
     };
 
     this.onGet = (store, key, result) => {

@@ -53,9 +53,10 @@ CareerPage.prototype.toggleCols = function(e) {
 };
 
 CareerPage.prototype.reloadList = async function() {
-    this.dom.list.innerHTML = '';
     const flightsList = await this.mod.getHistory();
     let lastDate = '';
+    this.dom.list.innerHTML = '';
+    flightsList.sort((a,b) => b.id - a.id);
     flightsList.forEach(entry => {
         const startDate = humanDate(new Date(entry.times.start*1000));
         if (lastDate != startDate) {
