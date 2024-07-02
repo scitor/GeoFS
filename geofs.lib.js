@@ -250,3 +250,38 @@ function ObjectStore(storageKey) {
         localStorage.removeItem(key);
     }
 }
+
+/**
+ * @param {Object} def
+ * @constructor
+ */
+function IndexedDB(def) {
+    const request = indexedDB.open(def.key);
+    request.onsuccess =
+    request.onupgradeneeded = (event) => {
+        this.db = event.target.result;
+        Object.keys(def.stores).forEach(key => this.db.objectStoreNames.contains(key) || this.db.createObjectStore(key, def.stores[key]));
+    };
+
+    this.onGet = (store, key, result) => {
+        this.db && (this.db.transaction(store).objectStore(store).get(key).onsuccess = e => result(e.target.result)) || setTimeout(() => this.onGet(store, key, result), 100);
+    };
+    this.promiseGet = (store, key) => {
+        return new Promise(success => {
+            this.db.transaction(store).objectStore(store).get(key).onsuccess = e => success(e.target.result);
+        });
+    };
+    this.promiseGetAll = (store) => {
+        return new Promise(success => {
+            this.db.transaction(store).objectStore(store).getAll().onsuccess = e => success(e.target.result);
+        });
+    };
+
+    this.set = (store, value) => {
+        this.db && this.db.transaction(store, 'readwrite').objectStore(store).put(value) || setTimeout(() => this.set(store,value), 100);
+    };
+
+    this.del = (store, key) => {
+        this.db && this.db.transaction(store, 'readwrite').objectStore(store).delete(key) || setTimeout(() => this.del(store,key), 100);
+    };
+}

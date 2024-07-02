@@ -36,6 +36,14 @@ function RandomJobsMod(aList, aIndex, version) {
     /** @type {MainWindow} */
     this.window = null;
     this.store = new ObjectStore('RJFlightV1');
+    this.archive = new IndexedDB({
+        key: 'RJFlightV1',
+        stores: {
+            flights: {keyPath: 'id'},
+            tapes: {keyPath: 'id'},
+            routes: {keyPath: 'id'}
+        }
+    });
     this.aHandler = new AirportHandler(this);
     this.flight = new FlightHandler(this);
     this.generator = new JobGenerator(this);
@@ -43,14 +51,6 @@ function RandomJobsMod(aList, aIndex, version) {
     this.rng = mulberry32((new Date()).getHours());
 }
 RandomJobsMod.prototype.init = function(getCustomData, ready) {
-    /*if (typeof getCustomData === 'function') {
-        let customData;
-        try {
-            importCustomData(getCustomData());
-        } catch (e) {
-            alert('Custom Data import failed, please check the format!\n'+e.message);
-        }
-    }*/
     if (!Object.keys(aList[0]).length) {
         ['major','minor'].forEach(s => Object.values(geofs.api.map.markerLayers[s].tiles).forEach(row => {
             row.forEach(m => {
@@ -100,29 +100,14 @@ RandomJobsMod.prototype.getIcao = function() {
     return this.airport.icao;
 };
 
-RandomJobsMod.prototype.getFlightTape = function(key) {
-    const store = new ObjectStore(key);
-    if (!store)
-        return;
-
-    return store.get('tape');
-};
-
-RandomJobsMod.prototype.getFlightRoute = function(key) {
-    const store = new ObjectStore(key);
-    if (!store)
-        return;
-
-    return store.get('route');
-};
-
-RandomJobsMod.prototype.removeHistoryEntry = function(key) {
-    ObjectStore.removeStorageByKey(key);
+RandomJobsMod.prototype.removeHistoryEntry = function(id) {
+    this.archive.del('flights', id);
+    this.archive.del('tapes', id);
+    this.archive.del('routes', id);
 };
 
 RandomJobsMod.prototype.getHistory = function() {
-    const keys = ObjectStore.listStorageKeys('^'+this.store.storageKey+'_').sort().reverse();
-    return keys.map(key => Object.assign({key},(new ObjectStore(key)).get('flight')));
+    return this.archive.promiseGetAll('flights');
 };
 
 RandomJobsMod.prototype.getJobsList = function() {

@@ -23,8 +23,12 @@ function FlightHandler (mod) {
     this.aHandler = mod.aHandler;
     this.airport = mod.airport;
     this.store = mod.store;
+    this.archive = mod.archive;
 
     this.resetTracker();
+    this.archive.onGet('tapes', 0, (res) => {
+        if (res) this.flightTape = res.tape;
+    });
 }
 
 /**
@@ -120,7 +124,9 @@ FlightHandler.prototype.resetTracker = function() {
         groundTime: 0,
         airspeed: 0
     };
+
     this.flightTape = [];
+    this.archive.del('tapes', 0);
 };
 
 FlightHandler.prototype.stopTracking = function() {
@@ -167,17 +173,24 @@ FlightHandler.prototype.archiveFlight = function() {
     if (!flight || !flight.id || !localStorage)
         return;
 
-    const storage = new ObjectStore([this.store.storageKey, flight.id].join('_'));
-    storage.set('flight', flight);
-    storage.set('tape', this.flightTape);
-    if (geofs.api.map.flightPath)
-        storage.set('route', geofs.api.map.flightPath._latlngs.map((p,i) => [p.lat,p.lng]));
+    this.archive.del('tapes', 0);
+    this.archive.set('flights', flight);
+    this.archive.set('tapes', {id:flight.id,tape:this.flightTape});
+    if (geofs.api.map.flightPath) {
+        this.archive.set('routes', {id:flight.id,
+            route:geofs.api.map.flightPath._latlngs.map((p,i) => [p.lat,p.lng])
+        });
+    }
 };
 
 FlightHandler.prototype.tapeRecord = function() {
     const flRecord = window.flight.recorder.makeRecord();
     const tapeSample = ['time', 'coord', 'controls', 'state', 'velocities', 'accelerations'].reduce((p, c) => {
-        p.push(flRecord[c]);
+        const rec = flRecord[c];
+        if (rec.map !== undefined)
+            p.push(rec.map(value => (typeof value === 'number') ? parseFloat(value.toFixed(6)) : value));
+        else
+            p.push(parseFloat(rec.toFixed(2)));
         return p;
     }, []);
     tapeSample[3][0] = tapeSample[3][0] ? 1 : 0;
@@ -205,6 +218,9 @@ FlightHandler.prototype.update = function() {
         tracker.airborneTime = 0;
         tracker.airspeed = undefined;
         flight.taxiDist = (flight.taxiDist||0) + plane.groundSpeed;
+    }
+    if (this.flightTape.length % 120 == 0) {
+        this.archive.set('tapes', {id:0,tape:this.flightTape});
     }
     this.tapeRecord();
     setTimeout(()=>this.tapeRecord(),500);

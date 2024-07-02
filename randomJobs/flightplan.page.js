@@ -301,7 +301,7 @@ FlightplanPage.prototype.refreshDisplays = function() {
 
     const duration = flight.times.end ? flight.times.end-flight.times.start :
                    (flight.times.landing||now())-(flight.times.takeoff||flight.times.start);
-    dDom.duration.value = [zeroPad(Math.floor(duration/3600)), zeroPad(Math.round(duration/60)%60)].join(':');
+    dDom.duration.value = [zeroPad(Math.floor(duration/3600)), zeroPad(Math.floor(duration/60)%60)].join(':');
     dDom.durationLabel.nodeValue = flight.times.end || !flight.times.takeoff ? 'Duration' : 'Duration (air)';
     const avgSpeed = flight.traveled > 1e3 && duration>60 ? flight.traveled / duration : 0;
     dDom.speedAvg.value = Math.round(convert.mpsToKts(avgSpeed)) || '';

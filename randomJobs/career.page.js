@@ -52,9 +52,9 @@ CareerPage.prototype.toggleCols = function(e) {
     this.reloadList();
 };
 
-CareerPage.prototype.reloadList = function() {
+CareerPage.prototype.reloadList = async function() {
     this.dom.list.innerHTML = '';
-    const flightsList = this.mod.getHistory();
+    const flightsList = await this.mod.getHistory();
     let lastDate = '';
     flightsList.forEach(entry => {
         const startDate = humanDate(new Date(entry.times.start*1000));
@@ -91,7 +91,7 @@ CareerPage.prototype.reloadList = function() {
             if (this._listCols.dist === 2)
                 distVal = Math.round(convert.mpsToKts(entry.traveled/duration));
             else
-                distVal = [zeroPad(Math.floor(duration/3600)), zeroPad(Math.round(duration/60)%60)].join(':');
+                distVal = [zeroPad(Math.floor(duration/3600)), zeroPad(Math.floor(duration/60)%60)].join(':');
         }
         jobDom.appendChild(createTag('div',{class:'dist'}, distVal));
 
@@ -117,17 +117,16 @@ CareerPage.prototype.reloadList = function() {
             const actionRemoveDom = appendNewChild(actionsDom, 'button', {class:'action-plan mdl-button--icon'});
             actionRemoveDom.appendChild(createTag('i',{class:'material-icons'},'delete'));
             actionRemoveDom.onclick = () => {
-                this.mod.removeHistoryEntry(entry.key);
-                this.reloadList();
+                this.mod.removeHistoryEntry(entry.id);
+                setTimeout(() => this.reloadList(),100);
             };
         }
     });
 };
 
-CareerPage.prototype.actionDownloadFlightTape = function(entry) {
-    const flightTape = this.mod.getFlightTape(entry.key);
-    const dataJson = JSON.stringify(flightTape, (_, value) => (typeof value === 'number') ? parseFloat(value.toFixed(6)) : value);
-    const dataURI = 'data:text/json;charset=utf-8,' + encodeURIComponent(dataJson);
+CareerPage.prototype.actionDownloadFlightTape = async function(entry) {
+    const flightTape = await this.mod.archive.promiseGet('tapes', entry.id);
+    const dataURI = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(flightTape.tape));
     const filename = ['GeoFS-tape', humanDate(new Date(entry.times.start * 1000))];
     if (entry.flightno)
         filename.push(entry.flightno);
@@ -136,7 +135,7 @@ CareerPage.prototype.actionDownloadFlightTape = function(entry) {
     createTag('a', {href: dataURI, download: filename.join('_') + '.json'}).click();
 };
 
-CareerPage.prototype.actionDownloadGPX = function(entry, duration) {
+CareerPage.prototype.actionDownloadGPX = async function(entry, duration) {
     const xmlDoc = createTag('xmlDoc');
     const gpxDom = appendNewChild(xmlDoc, 'gpx', {
         xmlns: 'http://www.topografix.com/GPX/1/1',
@@ -156,9 +155,10 @@ CareerPage.prototype.actionDownloadGPX = function(entry, duration) {
 
     const trkDom = appendNewChild(gpxDom, 'trk');
     let trkSeg = appendNewChild(trkDom, 'trkseg');
-    const flightTape = this.mod.getFlightTape(entry.key);
+    const flightTape = await this.mod.archive.promiseGet('tapes', entry.id);
+    if (!flightTape) return;
     const lastSample = {lat: 0, lon: 0};
-    flightTape.forEach(sample => {
+    flightTape.tape.forEach(sample => {
         const dist = geofs.api.map._map.distance({lat: lastSample.lat, lng: lastSample.lon}, {lat: sample[1][0], lng: sample[1][1]});
         if (dist < 1) return;
         if (dist > 3000)
@@ -172,10 +172,10 @@ CareerPage.prototype.actionDownloadGPX = function(entry, duration) {
         lastSample.lat = sample[1][0];
         lastSample.lon = sample[1][1];
     });
-    const flightRoute = this.mod.getFlightRoute(entry.key);
+    const flightRoute = await this.mod.archive.promiseGet('routes', entry.id);
     if (flightRoute) {
         const rteDom = appendNewChild(gpxDom, 'rte');
-        flightRoute.forEach(pt => {
+        flightRoute.route.forEach(pt => {
             rteDom.appendChild(createTag('rtept',{lat:pt[0], lon:pt[1]}));
         });
     }
