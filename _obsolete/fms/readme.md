@@ -1,4 +1,6 @@
-# Flight Management System for GeoFS
+# Flight Management System for GeoFS (Obsolete)
+
+## This mod is obsolete since GeoFS 3.8
 
 A very basic FMS for GeoFS using native flight paths for autopilot GPS/VOR/ILS navigation.
 
