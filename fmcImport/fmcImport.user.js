@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFS - FMC import & tweaks
-// @version      0.3.0
+// @version      0.3.1
 // @description  Enables the new GeoFS 3.8 FMC to read old FMC routes and import from SimBrief
 // @author       TurboMaximus
 // @match        https://*/geofs.php*
@@ -57,16 +57,19 @@
                 {lat:aCoords[0], lng:aCoords[1]},
                 {lat:parseFloat(cCoords[0]), lng:parseFloat(cCoords[1])}
             );
-            const ete = Math.round(dist / geofs.aircraft.instance.groundSpeed);
-            let dom=c.children[1].querySelector('span');
+            let ete = Math.round(dist / geofs.aircraft.instance.groundSpeed);
+            let dom = c.children[1].querySelector('span');
             if (!dom) {
                 dom = document.createElement('span');
                 dom.classList='geofs-waypointCoords';
                 dom.style.right='0';
                 c.children[1].appendChild(dom);
             }
+            let max = 60*60*48;
+            if (ete > max)
+                ete = max+1;
             const hours = Math.floor((ete/60/60));
-            dom.innerHTML = (hours?hours+'h ':'') + Math.floor((ete/60)%60)+'m';
+            dom.innerHTML = (ete>max?'+':'')+(hours?hours+'h ':'') + Math.floor((ete/60)%60)+'m';
         });
     },10000);
     function createTag(e,t={},n){const r=document.createElement(e);return Object.keys(t).forEach(e=>r.setAttribute(e,t[e])),n&&(r.innerHTML=n),r}
