@@ -35,15 +35,15 @@
     button.onclick = (e) => {
         if (!localStorage.simbriefUsername || e.ctrlKey)
             localStorage.simbriefUsername = prompt('SimBrief Username', localStorage.simbriefUsername);
+        let i=0;
         fetch('https://www.simbrief.com/api/xml.fetcher.php?json=1&username='+localStorage.simbriefUsername).then(data=>data.json()).then(json=>{
             if (!json || !json.navlog) return;
-            console.log(json);
             geofs.flightPlan.waypointArray = json.navlog.fix.map(entry => ({
                 ident:entry.ident,
-                lat:parseFloat(entry.pos_lat),
-                lon:parseFloat(entry.pos_long),
+                lat:parseFloat(entry.pos_lat+''+i++),
+                lon:parseFloat(entry.pos_long+''+i++),
                 alt:parseInt(entry.altitude_feet),
-                spd:(entry.type=='ltlg'||entry.stage=='CRZ'||parseInt(entry.altitude_feet)>26e3) ? 'M'+entry.mach : parseInt(entry.ind_airspeed),
+                spd:parseInt(entry.altitude_feet)>26e3 ? 'M'+entry.mach : parseInt(entry.ind_airspeed),
                 type:"FIX"
             }));
             geofs.flightPlan.refreshWaypoints();
