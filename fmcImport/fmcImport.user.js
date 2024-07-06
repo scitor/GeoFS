@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFS - FMC import & tweaks
-// @version      0.3.1
+// @version      0.3.2
 // @description  Enables the new GeoFS 3.8 FMC to read old FMC routes and import from SimBrief
 // @author       TurboMaximus
 // @match        https://*/geofs.php*
@@ -43,7 +43,7 @@
                 lat:parseFloat(entry.pos_lat),
                 lon:parseFloat(entry.pos_long),
                 alt:parseInt(entry.altitude_feet),
-                spd:(entry.type=='ltlg'||entry.stage=='CRZ') ? Math.round(entry.mach*66.6)*10 : parseInt(entry.ind_airspeed),
+                spd:(entry.type=='ltlg'||entry.stage=='CRZ'||parseInt(entry.altitude_feet)>26e3) ? 'M'+entry.mach : parseInt(entry.ind_airspeed),
                 type:"FIX"
             }));
             geofs.flightPlan.refreshWaypoints();
