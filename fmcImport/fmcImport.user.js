@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         GeoFS - FMC import
-// @version      0.2.0
+// @name         GeoFS - FMC import & tweaks
+// @version      0.3.0
 // @description  Enables the new GeoFS 3.8 FMC to read old FMC routes and import from SimBrief
 // @author       TurboMaximus
 // @match        https://*/geofs.php*
@@ -49,5 +49,25 @@
             geofs.flightPlan.refreshWaypoints();
         });
     };
+    setInterval(() => {
+        document.querySelectorAll('.geofs-flightPlanWaypoint').forEach(c => {
+            const cCoords = c.children[0].querySelector('span').innerHTML.split(',');
+            const aCoords = geofs.aircraft.instance.getCurrentCoordinates();
+            const dist = geofs.api.map._map.distance(
+                {lat:aCoords[0], lng:aCoords[1]},
+                {lat:parseFloat(cCoords[0]), lng:parseFloat(cCoords[1])}
+            );
+            const ete = Math.round(dist / geofs.aircraft.instance.groundSpeed);
+            let dom=c.children[1].querySelector('span');
+            if (!dom) {
+                dom = document.createElement('span');
+                dom.classList='geofs-waypointCoords';
+                dom.style.right='0';
+                c.children[1].appendChild(dom);
+            }
+            const hours = Math.floor((ete/60/60));
+            dom.innerHTML = (hours?hours+'h ':'') + Math.floor((ete/60)%60)+'m';
+        });
+    },10000);
     function createTag(e,t={},n){const r=document.createElement(e);return Object.keys(t).forEach(e=>r.setAttribute(e,t[e])),n&&(r.innerHTML=n),r}
 })();
