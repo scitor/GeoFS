@@ -25,10 +25,8 @@ function FlightHandler (mod) {
     this.store = mod.store;
     this.archive = mod.archive;
 
+    this.restoreState();
     this.resetTracker();
-    this.archive.onGet('tapes', 0, (res) => {
-        if (res) this.flightTape = res.tape;
-    });
 }
 
 /**
@@ -118,6 +116,18 @@ FlightHandler.prototype.resetFlight = function() {
     this.setCurrent({});
 };
 
+FlightHandler.prototype.restoreState = function() {
+    this.archive.onGet('tapes', 0, (res) => {
+        if (res) this.flightTape = res.tape;
+    });
+    /*this.archive.onGet('routes', 0, (res) => {
+        if (!res) return;
+        geofs.api.map.clearPath();
+        geofs.api.map.setPathPoints(res.route);
+        geofs.api.map.stopCreatePath();
+    });*/
+};
+
 FlightHandler.prototype.resetTracker = function() {
     this.tracker = {
         airborneTime: 0,
@@ -127,6 +137,7 @@ FlightHandler.prototype.resetTracker = function() {
 
     this.flightTape = [];
     this.archive.del('tapes', 0);
+    this.archive.del('routes', 0);
 };
 
 FlightHandler.prototype.stopTracking = function() {
@@ -176,16 +187,16 @@ FlightHandler.prototype.archiveFlight = function() {
     this.archive.del('tapes', 0);
     this.archive.set('flights', flight);
     this.archive.set('tapes', {id:flight.id,tape:this.flightTape});
-    if (geofs.api.map.flightPath) {
+    /*if (geofs.api.map.flightPath) {
         this.archive.set('routes', {id:flight.id,
             route:geofs.api.map.flightPath._latlngs.map((p,i) => [p.lat,p.lng])
         });
-    }
+    }*/
 };
 
 FlightHandler.prototype.tapeRecord = function() {
     const flRecord = window.flight.recorder.makeRecord();
-    const tapeSample = ['time', 'coord', 'controls', 'state', 'velocities', 'accelerations'].reduce((p, c) => {
+    const tapeSample = ['ti', 'co', 'ct', 'st', 've', 'acc'].reduce((p, c) => {
         const rec = flRecord[c];
         if (rec.map !== undefined)
             p.push(rec.map(value => (typeof value === 'number') ? parseFloat(value.toFixed(6)) : value));
@@ -193,8 +204,6 @@ FlightHandler.prototype.tapeRecord = function() {
             p.push(parseFloat(rec.toFixed(2)));
         return p;
     }, []);
-    tapeSample[3][0] = tapeSample[3][0] ? 1 : 0;
-    tapeSample[3][1] = tapeSample[3][1] ? 1 : 0;
     this.flightTape.push(tapeSample);
 };
 
@@ -221,6 +230,11 @@ FlightHandler.prototype.update = function() {
     }
     if (this.flightTape.length % 120 == 0) {
         this.archive.set('tapes', {id:0,tape:this.flightTape});
+        /*if (geofs.api.map.flightPath) {
+            this.archive.set('routes', {id:0,
+                route:geofs.api.map.flightPath._latlngs.map((p,i) => [p.lat,p.lng])
+            });
+        }*/
     }
     this.tapeRecord();
     setTimeout(()=>this.tapeRecord(),500);

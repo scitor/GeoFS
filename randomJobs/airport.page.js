@@ -73,12 +73,6 @@ AirportPage.prototype.reloadList = function() {
         const actionMapDom = appendNewChild(actionsDom, 'button', {class:'action-plan mdl-button--icon'});
         actionMapDom.appendChild(createTag('i',{class:'material-icons'},'insights'));
         actionMapDom.onclick = () => {
-            geofs.api.map.clearPath();
-            geofs.api.map.setPathPoints([
-                this.mod.aHandler.getAirportCoords(job.orgn),
-                this.mod.aHandler.getAirportCoords(job.dest)
-            ]);
-            geofs.api.map.stopCreatePath();
             ui.panel.show(".geofs-map-list");
         };
         const actionPlanDom = appendNewChild(actionsDom, 'button', {class:'action-plan mdl-button--icon'});

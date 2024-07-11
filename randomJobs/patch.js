@@ -2,13 +2,14 @@
 
 (function patch() {
     if (!geofs || !geofs.map || !geofs.map.addRunwayMarker)
-        return setTimeout(patch, 10);
+        return setTimeout(patch, 1000);
 
     const geofs_map_addRunwayMarker = geofs.map.addRunwayMarker;
     geofs.map.addRunwayMarker = function geofs_map_addRunwayMarker__patch(a) {
         add2AList(a);
         return geofs_map_addRunwayMarker(a);
     };
+    geofs.nav.loadNavaidsAndRunways();
 })();
 
 /**

@@ -50,7 +50,7 @@ function RandomJobsMod(aList, aIndex, version) {
 
     this.rng = mulberry32((new Date()).getHours());
 }
-RandomJobsMod.prototype.init = function(getCustomData, ready) {
+RandomJobsMod.prototype.init = function(ready) {
     if (!Object.keys(aList[0]).length) {
         ['major','minor'].forEach(s => Object.values(geofs.api.map.markerLayers[s].tiles).forEach(row => {
             row.forEach(m => {

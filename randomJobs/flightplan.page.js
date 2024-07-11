@@ -57,12 +57,6 @@ FlightplanPage.prototype.populate = function(dom) {
     this.buttonsDom.cancelFlight.onclick = () => this.cancelFlight();
     this.buttonsDom.startFlight.onclick = () => this.startFlight();
     this.buttonsDom.finishFlight.onclick = () => this.finishFlight();
-
-    dom.onkeydown =
-    dom.onkeyup =
-    dom.onkeypress = function (e) {
-        e.stopImmediatePropagation();
-    }
 };
 
 FlightplanPage.prototype.finishFlight = function() {

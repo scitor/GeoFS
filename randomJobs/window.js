@@ -20,10 +20,10 @@ MainWindow.prototype.init = function() {
     });
     const uiRightDom = $('.geofs-ui-right')[0];
     this.ctrlPadDom = appendNewChild(uiRightDom, 'div', {class:'jobs-pad'}, 1);
-    this.ctrlPadDom.onclick = (e) => this.toggleWindow(e);
 
     this.padLabelDom = appendNewChild(this.ctrlPadDom, 'div', {class:'control-pad-label transp-pad'});
     this.padLabelDom.innerHTML = 'JOBS';
+    this.padLabelDom.onclick = (e) => this.toggleWindow(e);
 
     this.jobsWindowDom = appendNewChild(document.body, 'div', {class:'jobs-window'});
     this.jobsWindowDom.innerHTML = '<p style="text-align:center;">... initializing ...</p>';
@@ -70,6 +70,11 @@ MainWindow.prototype.populate = function(tpl) {
     this.makeScalable(this.headerDom.title);
     this.makeScalable(this.footerDom);
 
+    this.jobsWindowDom.onkeydown =
+    this.jobsWindowDom.onkeyup =
+    this.jobsWindowDom.onkeypress = function (e) {
+        e.stopImmediatePropagation();
+    };
     this.populated = true;
 };
 
@@ -118,7 +123,7 @@ let _windowFirstTime = true;
  * @param {Event} e
  */
 MainWindow.prototype.toggleWindow = function(e) {
-    if (e.target != this.ctrlPadDom) return;
+    if (e.target != this.padLabelDom) return;
     if (this.padLabelDom.classList.contains('blue-pad')) {
         this.padLabelDom.classList.remove('blue-pad');
         this.ctrlPadDom.classList.remove('open');

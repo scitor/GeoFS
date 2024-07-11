@@ -111,9 +111,9 @@ CareerPage.prototype.reloadList = async function() {
             gpxDownloadDom.appendChild(createTag('i', {class: 'material-icons', title: 'Download GPX'}, 'location_on'));
             gpxDownloadDom.onclick = () => this.actionDownloadGPX(entry, duration);
 
-            const flightTapeDom = appendNewChild(actionsDom, 'button', {class: 'action-plan mdl-button--icon'});
+            /*const flightTapeDom = appendNewChild(actionsDom, 'button', {class: 'action-plan mdl-button--icon'});
             flightTapeDom.appendChild(createTag('i', {class: 'material-icons', title: 'Download Flight Tape'}, 'download' ));
-            flightTapeDom.onclick = () => this.actionDownloadFlightTape(entry);
+            flightTapeDom.onclick = () => this.actionDownloadFlightTape(entry);*/
         } else if (this._listCols.actions === 2) {
             const actionRemoveDom = appendNewChild(actionsDom, 'button', {class:'action-plan mdl-button--icon'});
             actionRemoveDom.appendChild(createTag('i',{class:'material-icons'},'delete'));
@@ -196,11 +196,5 @@ CareerPage.prototype.actionLoad = function(entry) {
 };
 
 CareerPage.prototype.actionMap = function(entry) {
-    geofs.api.map.clearPath();
-    geofs.api.map.setPathPoints([
-        this.mod.aHandler.getAirportCoords(entry.orgn),
-        this.mod.aHandler.getAirportCoords(entry.dest)
-    ]);
-    geofs.api.map.stopCreatePath();
     ui.panel.show(".geofs-map-list");
 };

@@ -2,9 +2,6 @@ var geofs = {
     api: {
         map: {
             addRunwayMarker: function (a) {},
-            setPathPoints: function (a) {},
-            clearPath: function () {},
-            stopCreatePath: function () {},
             markerLayers: {tiles: {key: [{runway: {name: ''}}]}},
             _map: {
                 distance: function (a, b) {}
@@ -39,9 +36,8 @@ var jQuery;
 function $ (a) {
     this.getJSON = function () {};
     this.get = function () {};
-};
+}
 $.prototype.hide = function(){};
 $.prototype.show = function(){};
 var localStorage;
 var METAR;
-Set.prototype.union = function(){};

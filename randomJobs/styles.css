@@ -1,25 +1,29 @@
+.geofs-flightPlan {
+    opacity: 0.7;
+}
+
 .geofs-ui-right .jobs-pad {
     user-select: none;
     -webkit-user-select: none;
     width: 50px;
     height: 80px;
-    border-radius: 40px;
     outline: none;
-    /*position: absolute;*/
-    /*margin: -160px 0 160px 0;*/
     text-orientation: upright;
     writing-mode: vertical-rl;
     letter-spacing: -2px;
-    line-height: 50px;
 
     border: 1px solid #888;
+    border-radius: 15px;
     background-color: #000;
     box-shadow: 0 0 5px #000;
     cursor: pointer;
 }
-
 .jobs-pad .blue-pad {
-    border-radius: 40px;
+    border-radius: 15px;
+}
+
+.geofs-ui-right .jobs-pad .control-pad-label {
+    line-height: 50px;
 }
 
 .jobs-window {
@@ -123,8 +127,12 @@
     padding: 4px;
 }
 
+.flights-list .date-entry,
+.flights-list .list-entry,
 .jobs-window .page-flight input[type=text] {
-    font-family: monospace;
+    letter-spacing: 1px;
+    font-family: 'LCD-Bold', monospace;
+    text-shadow: 0px 0px 3px #888;
 }
 
 .page-flight .flight-controls input:active:hover,
@@ -375,4 +383,56 @@
     font-size: 24px;
     position: relative;
     padding: 5px 0 0;
+}
+
+.jobs-window .page-config.geofs-list {
+    background: none;
+}
+.jobs-window .page-config > div {
+    font-weight: bold;
+    font-size: 16px;
+    padding: 4px 6px;
+}
+.jobs-window .page-config > div > div {
+    font-weight: normal;
+    font-size: initial;
+    padding: 6px 0;
+}
+.jobs-window .page-config {
+    color: lightgrey;
+}
+.jobs-window .page-config input {
+    background: none;
+    border: 1px solid grey;
+    color: lightgrey;
+    padding: 2px 4px;
+    outline: none;
+}
+.jobs-window .page-config table,
+.jobs-window .page-config label {
+    display:block;
+    padding: 2px 6px;
+    font-size: 14px;
+}
+.jobs-window .page-config label input {
+    float: right;
+}
+.jobs-window .page-config label input[type="range"] {
+    height: 12px;
+}
+.jobs-window .page-config table.config-custom-routes input,
+.jobs-window .page-config table.config-custom-airlines input {
+    width: 100%;
+}
+.jobs-window .page-config table.config-custom-airlines td:nth-child(1) {
+    width: 50px;
+}
+.jobs-window .page-config table.config-custom-airlines td:nth-child(2) {
+    width: 50px;
+}
+.jobs-window .page-config table.config-custom-airlines td:nth-child(3) {
+
+}
+.jobs-window .page-config table.config-custom-airlines td:nth-child(4) {
+
 }
