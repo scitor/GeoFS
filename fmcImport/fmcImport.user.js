@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFS - FMC import & tweaks
-// @version      0.3.2
+// @version      0.3.4
 // @description  Enables the new GeoFS 3.8 FMC to read old FMC routes and import from SimBrief
 // @author       TurboMaximus
 // @match        https://*/geofs.php*
@@ -12,7 +12,7 @@
 (function init() {
     'use strict';
 
-    if (!window.jQuery)
+    if (!window.jQuery || !geofs || !geofs.flightPlan)
         return setTimeout(init, 1000);
 
     geofs.flightPlan.import = function(json) {
@@ -33,21 +33,25 @@
     const button = createTag('input',{type:'button',value:'SimBrief import',style:'background:none;color:white;border:0'});
     $('.geofs-flightPlanHeader')[0].appendChild(button);
     button.onclick = (e) => {
-        if (!localStorage.simbriefUsername || e.ctrlKey)
-            localStorage.simbriefUsername = prompt('SimBrief Username', localStorage.simbriefUsername);
+        localStorage.simbriefUsername = prompt('SimBrief Username', localStorage.simbriefUsername||'');
+        if (!localStorage.simbriefUsername || localStorage.simbriefUsername == 'null')
+            return delete localStorage.simbriefUsername;
         let i=0;
-        fetch('https://www.simbrief.com/api/xml.fetcher.php?json=1&username='+localStorage.simbriefUsername).then(data=>data.json()).then(json=>{
-            if (!json || !json.navlog) return;
-            geofs.flightPlan.waypointArray = json.navlog.fix.map(entry => ({
-                ident:entry.ident,
-                lat:parseFloat(entry.pos_lat+''+i++),
-                lon:parseFloat(entry.pos_long+''+i++),
-                alt:parseInt(entry.altitude_feet),
-                spd:parseInt(entry.altitude_feet)>26e3 ? 'M'+entry.mach : parseInt(entry.ind_airspeed),
-                type:"FIX"
-            }));
-            geofs.flightPlan.refreshWaypoints();
-        });
+        fetch('https://www.simbrief.com/api/xml.fetcher.php?json=1&username='+localStorage.simbriefUsername)
+            .then(data => data.ok && data.json())
+            .then(json => {
+                if (!json || !json.navlog) return delete localStorage.simbriefUsername;
+                geofs.flightPlan.waypointArray = json.navlog.fix.map(entry => ({
+                    ident:entry.ident,
+                    lat:parseFloat(entry.pos_lat+''+i++),
+                    lon:parseFloat(entry.pos_long+''+i++),
+                    alt:parseInt(entry.altitude_feet),
+                    spd:parseInt(entry.altitude_feet)>26e3 ? 'M'+entry.mach : parseInt(entry.ind_airspeed),
+                    type:"FIX"
+                }));
+                geofs.flightPlan.refreshWaypoints();
+            }
+        );
     };
     setInterval(() => {
         document.querySelectorAll('.geofs-flightPlanWaypoint').forEach(c => {
