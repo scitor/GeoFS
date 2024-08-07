@@ -221,7 +221,7 @@ FlightHandler.prototype.update = function() {
         return;
 
     const tracker = this.tracker;
-    const dt = Math.min(2, now(true) - tracker.time);
+    const dt = 1;//Math.min(2, now(true) - tracker.time);
     tracker.time = now(true);
     const times = flight.times;
     const plane = geofs.aircraft.instance;
@@ -238,14 +238,6 @@ FlightHandler.prototype.update = function() {
         tracker.airborneTime = 0;
         tracker.airspeed = 0;
         flight.taxiDist = (flight.taxiDist||0) + (plane.groundSpeed*dt);
-    }
-    if (this.flightTape.length % 120 == 0) {
-        this.archive.set('tapes', {id:0,tape:this.flightTape});
-        /*if (geofs.api.map.flightPath) {
-            this.archive.set('routes', {id:0,
-                route:geofs.api.map.flightPath._latlngs.map((p,i) => [p.lat,p.lng])
-            });
-        }*/
     }
     if (this.flightTape.length % 120 == 0) {
         this.archive.set('tapes', {id:0,tape:this.flightTape});
