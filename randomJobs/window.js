@@ -18,6 +18,9 @@ MainWindow.prototype.init = function() {
     $.get(`${githubRepo}/randomJobs/flags16.css?${now()}`, data => {
         document.head.appendChild(createTag('style',{type:'text/css'}, data));
     });
+    $.get(`${githubRepo}/randomJobs/airlines.css?${now()}`, data => {
+        document.head.appendChild(createTag('style',{type:'text/css'}, data.replace('{githubRepo}',githubRepo)));
+    });
     const uiRightDom = $('.geofs-ui-right')[0];
     this.ctrlPadDom = appendNewChild(uiRightDom, 'div', {class:'jobs-pad'}, 1);
 

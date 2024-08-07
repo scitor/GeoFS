@@ -19,7 +19,17 @@ var geofs = {
             trueAirSpeed: 0
         }
     },
-    randomJobs: {}
+    randomJobs: {},
+    nav: {
+        fixes: {},
+        removeNavaid: function() {}
+    },
+    isPaused: function() {},
+    flightPlan: {
+        waypointArray: [],
+        refreshWaypoints: function () {},
+        selectWaypoint: function () {}
+    }
 };
 var weather;
 var flight = {

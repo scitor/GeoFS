@@ -10,6 +10,7 @@
         return geofs_map_addRunwayMarker(a);
     };
     geofs.nav.loadNavaidsAndRunways();
+    geofs.nav.loadFixes();
 })();
 
 /**

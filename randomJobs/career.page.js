@@ -66,16 +66,16 @@ CareerPage.prototype.reloadList = async function() {
         const jobDom = appendNewChild(this.dom.list, 'li', {class:'list-entry'});
 
         if (this._listCols.flightno === 0) {
-            let src = `${githubRepo}/randomJobs/airline.png`;
+            let src = `${githubRepo}/randomJobs/airline.png`, css;
             if (entry.regional) {
                 src = `${githubRepo}/randomJobs/regional.png`;
-            } else {
-                if (this.mod.aHandler.hasAIcon(entry.airline))
-                    src = `https://www.flightaware.com/images/airline_logos/24px/${entry.airline}.png`;
+            } else if (this.mod.aHandler.hasAIcon(entry.airline)) {
+                src = `${githubRepo}/randomJobs/com.png`;
+                css = 'airline-icon icao-'+entry.airline;
             }
             const flightNoDom = appendNewChild(jobDom, 'div',{class:'flightno'});
             const aInfo = this.mod.aHandler.getAInfo(entry.airline);
-            appendNewChild(flightNoDom, 'img', {src, alt:aInfo.name, title:aInfo.name, referrerpolicy:'no-referrer'});
+            appendNewChild(flightNoDom, 'img', {src, alt:aInfo.name, title:aInfo.name, referrerpolicy:'no-referrer', class:css});
 
             flightNoDom.appendChild(createTag('span', {}, entry.flightno));
         } else if (this._listCols.flightno === 1) {
@@ -84,16 +84,16 @@ CareerPage.prototype.reloadList = async function() {
         }
         jobDom.appendChild(createTag('div',{class:'dest'}, this._listCols.dest === 0 ? entry.dest : entry.orgn));
 
-        const duration = entry.times.end - entry.times.start;
+        const duration = (entry.times.end - entry.times.start) || 0;
+        const traveled = entry.traveled || 0;
         let distVal = '';
         if (this._listCols.dist === 0)
-            distVal = Math.round(convert.kmToNm(entry.traveled/1000)) + 'NM';
-        else {
-            if (this._listCols.dist === 2)
-                distVal = Math.round(convert.mpsToKts(entry.traveled/duration));
-            else
-                distVal = [zeroPad(Math.floor(duration/3600)), zeroPad(Math.floor(duration/60)%60)].join(':');
-        }
+            distVal = Math.round(convert.kmToNm(traveled/1000)) + 'NM';
+        else if (this._listCols.dist === 2)
+            distVal = Math.round(convert.mpsToKts(traveled/duration));
+        else
+            distVal = [zeroPad(Math.floor(duration/3600)), zeroPad(Math.floor(duration/60)%60)].join(':');
+
         jobDom.appendChild(createTag('div',{class:'dist'}, distVal));
 
         const actionsDom = appendNewChild(jobDom,'div',{class:'actions'});

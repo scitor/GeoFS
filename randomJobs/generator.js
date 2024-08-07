@@ -18,8 +18,8 @@ JobGenerator.prototype.chance = function(percent) {
 JobGenerator.prototype.randomEl = function (array) {
     return array[Math.floor(this.rng() * array.length)];
 };
-JobGenerator.prototype.hasJob = function(orgn, dest, airline) {
-    return this.airport.jobs.find(job => job.orgn == orgn && job.dest == dest && job.airline == airline);
+JobGenerator.prototype.hasJob = function(orgn, dest, airline=null) {
+    return this.airport.jobs.find(job => job.orgn == orgn && job.dest == dest && (!airline || job.airline == airline));
 };
 JobGenerator.prototype.generateJob = function() {
     const job = this.generateAirlineJob() || this.generateRegionalJob();
@@ -63,8 +63,11 @@ JobGenerator.prototype.generateRegionalJob = function() {
                 nearby[opt.major].splice(current, 1);
 
             if (nearby[opt.major].length && (opt.chance===1 || this.chance(opt.chance))) {
-                job = this.createJobObj(this.airport.icao, this.randomEl(nearby[opt.major]));
-                return true;
+                const destIcao = this.randomEl(nearby[opt.major]);
+                if (!this.hasJob(this.airport.icao, destIcao)) {
+                    job = this.createJobObj(this.airport.icao, destIcao);
+                    return true;
+                }
             }
         });
         if (job) {

@@ -65,7 +65,7 @@ FlightHandler.prototype.sync = function() {
 
 FlightHandler.prototype.hasOrigin = function() {
     const flight = this.getCurrent();
-    return flight && flight.orgn && flight.orgn.length;
+    return flight && flight.orgn && !!this.aHandler.getAirportCoords(flight.orgn);
 };
 
 FlightHandler.prototype.getOrigin = function() {
@@ -75,7 +75,7 @@ FlightHandler.prototype.getOrigin = function() {
 
 FlightHandler.prototype.hasDestination = function() {
     const flight = this.getCurrent();
-    return flight && flight.dest && flight.dest.length;
+    return flight && flight.dest && !!this.aHandler.getAirportCoords(flight.dest);
 };
 
 FlightHandler.prototype.getDestination = function() {
@@ -89,6 +89,7 @@ FlightHandler.prototype.startFlight = function() {
     if (!flight)
         return;
 
+    flight.dist = this.aHandler.getAirportDist(flight.orgn, flight.dest) * 1.1;
     flight.status = STATUS.DEPARTURE;
     this.startTracking();
 };
@@ -98,6 +99,11 @@ FlightHandler.prototype.finishFlight = function() {
     if (!flight)
         return;
 
+    if (!flight.traveled)
+        flight.traveled = 0;
+
+    if (flight.status != STATUS.ARRIVAL)
+        flight.finished = flight.status;
     flight.status = STATUS.FINISHED;
     this.stopTracking();
     this.archiveFlight();
@@ -130,6 +136,7 @@ FlightHandler.prototype.restoreState = function() {
 
 FlightHandler.prototype.resetTracker = function() {
     this.tracker = {
+        time: now(true),
         airborneTime: 0,
         groundTime: 0,
         airspeed: 0
@@ -214,19 +221,31 @@ FlightHandler.prototype.update = function() {
         return;
 
     const tracker = this.tracker;
+    const dt = Math.min(2, now(true) - tracker.time);
+    tracker.time = now(true);
     const times = flight.times;
     const plane = geofs.aircraft.instance;
     let airborne = !plane.groundContact && !plane.waterContact;
     if (airborne) {
-        tracker.airborneTime++;
+        flight.airborneTime = (flight.airborneTime||0)+dt;
+        tracker.airborneTime += dt;
         tracker.groundTime = 0;
         tracker.airspeed = ((tracker.airspeed||plane.trueAirSpeed)*29 + plane.trueAirSpeed) / 30;
-        flight.traveled = (flight.traveled||0) + plane.groundSpeed;
+        flight.traveled = (flight.traveled||0) + (plane.groundSpeed*dt);
     } else {
-        tracker.groundTime++;
+        flight.groundTime = (flight.groundTime||0)+dt;
+        tracker.groundTime += dt;
         tracker.airborneTime = 0;
-        tracker.airspeed = undefined;
-        flight.taxiDist = (flight.taxiDist||0) + plane.groundSpeed;
+        tracker.airspeed = 0;
+        flight.taxiDist = (flight.taxiDist||0) + (plane.groundSpeed*dt);
+    }
+    if (this.flightTape.length % 120 == 0) {
+        this.archive.set('tapes', {id:0,tape:this.flightTape});
+        /*if (geofs.api.map.flightPath) {
+            this.archive.set('routes', {id:0,
+                route:geofs.api.map.flightPath._latlngs.map((p,i) => [p.lat,p.lng])
+            });
+        }*/
     }
     if (this.flightTape.length % 120 == 0) {
         this.archive.set('tapes', {id:0,tape:this.flightTape});

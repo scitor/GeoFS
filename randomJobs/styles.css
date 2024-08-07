@@ -231,7 +231,6 @@
 }
 .flights-list .list-entry div img {
     background-color: white;
-    padding: 2px;
     margin: 0 4px 0 -2px;
 }
 .flights-list .list-header span:nth-child(1){
@@ -315,14 +314,12 @@
     letter-spacing: -1px;
 }
 
-.page-flight li div input[type=time] {
-    height: 28px;
-}
-
-.page-flight li div input[type=time]::-webkit-calendar-picker-indicator {
-    display: none;
-}
-
+.page-flight li .tailno-input.disabled,
+.page-flight li .flightno-input.disabled,
+.page-flight li .origin-input.disabled,
+.page-flight li .destination-input.disabled,
+.page-flight li .sched-dep-input.disabled,
+.page-flight li .sched-arr-input.disabled,
 .page-flight li .delay-info,
 .page-flight li .flighttime-info,
 .page-flight li .traveled-info,
@@ -358,10 +355,9 @@
     width: 24px;
     float: right;
     background-color: white;
-    padding: 2px;
     border: 1px solid grey;
     border-radius: 2px;
-    margin: -4px -4px 0 4px;
+    margin: 0 0 0 4px;
 }
 
 .page-flight .flight-controls {

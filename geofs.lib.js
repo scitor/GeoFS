@@ -77,8 +77,8 @@ function mulberry32(seed) {
       return (((t ^ t >>> 14) >>> 0) / 4294967296) * range + offset;
     }
 }
-function now() {
-    return Math.floor(new Date()/1000);
+function now(raw = false) {
+    return raw ? new Date()/1000 : Math.floor(new Date()/1000);
 }
 function zeroPad(int) {
     return ('0'+int).slice(-2);
@@ -259,6 +259,7 @@ function IndexedDB(def) {
     const request = indexedDB.open(def.key);
     request.onsuccess =
     request.onupgradeneeded = (event) => {
+        /** @type IDBDatabase */
         this.db = event.target.result;
         Object.keys(def.stores).forEach(key => this.db.objectStoreNames.contains(key) || this.db.createObjectStore(key, def.stores[key]));
         // migrate history
@@ -271,10 +272,22 @@ function IndexedDB(def) {
             this.set('routes', {id:flight.id,route:oldStore.get('route')});
             ObjectStore.removeStorageByKey(key);
         });
+        console.log('IDBDr success', this.db);
+        this.db.onerror = e => console.log('IDBD error', e, this.db);
+        this.db.onabort = e => console.log('IDBD abort', e, this.db);
+        this.db.onclose = e => console.log('IDBD closed', e, this.db);
     };
+    request.onblocked = e => console.log('IDBDr blocked', e);
+    request.onerror = e => console.log('IDBDr error', e);
 
     this.onGet = (store, key, result) => {
-        this.db && (this.db.transaction(store).objectStore(store).get(key).onsuccess = e => result(e.target.result)) || setTimeout(() => this.onGet(store, key, result), 100);
+        if (!this.db)
+            return setTimeout(() => this.onGet(store, key, result), 100);
+        try {
+            this.db.transaction(store).objectStore(store).get(key).onsuccess = e => result(e.target.result);
+        } catch (e) {
+            console.log('IDBD get', key, e, this.db);
+        }
     };
     this.promiseGet = (store, key) => {
         return new Promise(success => {
@@ -288,10 +301,21 @@ function IndexedDB(def) {
     };
 
     this.set = (store, value) => {
-        this.db && this.db.transaction(store, 'readwrite').objectStore(store).put(value) || setTimeout(() => this.set(store,value), 100);
+        if (!this.db)
+            return setTimeout(() => this.set(store,value), 100);
+        try {
+            this.db.transaction(store, 'readwrite').objectStore(store).put(value);
+        } catch (e) {
+            console.log('IDBD set', value, e, this.db);
+        }
     };
 
     this.del = (store, key) => {
-        this.db && this.db.transaction(store, 'readwrite').objectStore(store).delete(key) || setTimeout(() => this.del(store,key), 100);
+        if (!this.db) setTimeout(() => this.del(store,key), 100);
+        try {
+            this.db.transaction(store, 'readwrite').objectStore(store).delete(key);
+        } catch (e) {
+            console.log('IDBD del', key, e, this.db);
+        }
     };
 }

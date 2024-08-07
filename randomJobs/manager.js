@@ -68,7 +68,7 @@ RandomJobsMod.prototype.init = function(ready) {
     });
 };
 RandomJobsMod.prototype.update = function() {
-    if (flight.recorder.playing) return;
+    if (flight.recorder.playing || geofs.isPaused()) return;
     this.updateCurrentAirport();
     this.flight.update();
     this.window && this.window.update();
@@ -123,4 +123,47 @@ RandomJobsMod.prototype.generateJob = function() {
         return;
 
     return this.generator.generateJob();
+};
+
+RandomJobsMod.prototype.generateFlightPlan = function(orgn, dest) {
+    const navs = [];
+    const orgnC = this.aHandler.getAirportCoords(orgn);
+    const destC = this.aHandler.getAirportCoords(dest);
+    const dist = this.aIndex[0].dist;
+    const distTotal = dist(...orgnC, ...destC);
+    const midC = [(orgnC[0] + destC[0])/2, (orgnC[1] + destC[1])/2];
+    Object.keys(geofs.nav.fixes).forEach(fixKey => geofs.nav.fixes[fixKey].forEach(fix => {
+        const distMid = dist(...midC, ...fix);
+        if (distMid < distTotal/3) {
+            const distOrgn = dist(...orgnC, ...fix);
+            const distDest = dist(...destC, ...fix);
+            navs.push([...fix, fixKey, distOrgn, distMid, distDest]);
+        }
+    }));
+    const waypoints = [{ ident:orgn, lat:orgnC[0], lon:orgnC[1] }];
+    const navOrgn = navs.sort((a,b) => a[3] - b[3])[0];
+    if (navOrgn) {
+        waypoints.push({ ident:navOrgn[2], lat:navOrgn[0], lon:navOrgn[1]});
+    }
+    if (distTotal > 500e3 && distTotal < 1000e3) {
+        const navMid = navs.sort((a,b) => a[4] - b[4])[0];
+        if (navMid && !waypoints.find(w=>w.ident==navMid[2]))
+            waypoints.push({ ident:navMid[2], lat:navMid[0], lon:navMid[1]});
+    }
+    const navDest = navs.sort((a,b) => a[5] - b[5])[0];
+    if (navDest && !waypoints.find(w=>w.ident==navDest[2])) {
+        waypoints.push({ ident:navDest[2], lat:navDest[0], lon:navDest[1]});
+    }
+    if (waypoints.length == 1) {
+        waypoints.push({ ident:'FIX', lat:midC[0], lon:midC[1]});
+    }
+    waypoints.push({ ident:dest, lat:destC[0], lon:destC[1] });
+    geofs.flightPlan.clear();
+    geofs.flightPlan.trackedWaypoint = undefined;
+    geofs.flightPlan.waypointArray.forEach(a => a.navaid && a.navaid.fromFlightPlan && geofs.nav.removeNavaid(a.navaid.id));
+    geofs.flightPlan.waypointArray = waypoints.map(w => Object.assign({type:'fix',alt:'',spd:''},w)).map(w => {w.lat+=0.000001;w.lon+=0.000001;return w});
+    geofs.flightPlan.refreshWaypoints();
+    geofs.flightPlan.isOpen || geofs.flightPlan.toggle();
+
+    return navs;
 };

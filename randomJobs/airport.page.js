@@ -55,15 +55,16 @@ AirportPage.prototype.reloadList = function() {
         const jobDom = appendNewChild(this.dom.list, 'li', {class:'list-entry'});
 
         let src = `${githubRepo}/randomJobs/airline.png`;
+        let css = '';
         if (job.regional) {
             src = `${githubRepo}/randomJobs/regional.png`;
-        } else {
-            if (this.mod.aHandler.hasAIcon(job.airline))
-                src = `https://www.flightaware.com/images/airline_logos/24px/${job.airline}.png`;
+        } else if (this.mod.aHandler.hasAIcon(job.airline)) {
+            src = `${githubRepo}/randomJobs/com.png`;
+            css = 'airline-icon icao-'+job.airline;
         }
         const flightNoDom = appendNewChild(jobDom, 'div',{class:'flightno'});
         const aInfo = this.mod.aHandler.getAInfo(job.airline);
-        appendNewChild(flightNoDom, 'img', {src, alt:aInfo.name, title:aInfo.name, referrerpolicy:'no-referrer'});
+        appendNewChild(flightNoDom, 'img', {src, alt:aInfo.name, title:aInfo.name, class:css});
 
         flightNoDom.appendChild(createTag('span', {}, job.flightno));
         jobDom.appendChild(createTag('div',{class:'dest'}, job.dest));
@@ -74,6 +75,7 @@ AirportPage.prototype.reloadList = function() {
         actionMapDom.appendChild(createTag('i',{class:'material-icons'},'insights'));
         actionMapDom.onclick = () => {
             ui.panel.show(".geofs-map-list");
+            this.mod.generateFlightPlan(job.orgn, job.dest);
         };
         const actionPlanDom = appendNewChild(actionsDom, 'button', {class:'action-plan mdl-button--icon'});
         actionPlanDom.appendChild(createTag('i',{class:'material-icons'},'airplane_ticket'));

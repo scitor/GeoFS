@@ -60,21 +60,37 @@ FlightplanPage.prototype.populate = function(dom) {
 };
 
 FlightplanPage.prototype.finishFlight = function() {
+    Object.values(this.inputsDom).forEach(i => {
+        i.disabled = false;
+        i.parentNode.classList.remove('disabled');
+    });
     this.jobMngr.flight.finishFlight();
     this.updateForm();
 };
 
 FlightplanPage.prototype.startFlight = function() {
+    Object.values(this.inputsDom).forEach(i => {
+        i.disabled = true;
+        i.parentNode.classList.add('disabled');
+    });
     this.jobMngr.flight.startFlight();
     this.updateForm();
 };
 
 FlightplanPage.prototype.cancelFlight = function() {
+    Object.values(this.inputsDom).forEach(i => {
+        i.disabled = false;
+        i.parentNode.classList.remove('disabled');
+    });
     this.jobMngr.flight.cancelFlight();
     this.updateForm();
 };
 
 FlightplanPage.prototype.resetFlight = function() {
+    Object.values(this.inputsDom).forEach(i => {
+        i.disabled = false;
+        i.parentNode.classList.remove('disabled');
+    });
     this.jobMngr.flight.resetFlight();
     this.updateForm();
     this.refreshDisplays();
@@ -182,9 +198,15 @@ FlightplanPage.prototype.handleActiveButtons = function() {
         preventFinishFlight.push(HINTS.completePhase);
     }
 
+    if (status == STATUS.PLANING) {
+        this.flightStatusDom.innerHTML = preventStartFlight[0] || '';
+    }
     this.buttonsDom.startFlight.title = preventStartFlight.join('\n') || HINTS.ready;
     this.buttonsDom.startFlight.disabled = preventStartFlight.length > 0;
 
+    if (status == STATUS.ARRIVAL) {
+        this.flightStatusDom.innerHTML = preventFinishFlight[0] || STATUS.ARRIVAL.toUpperCase();
+    }
     this.buttonsDom.finishFlight.title = preventFinishFlight.join('\n') || HINTS.finished;
     this.buttonsDom.finishFlight.disabled = preventFinishFlight.length > 0;
 };
@@ -226,13 +248,14 @@ FlightplanPage.prototype.updateAirlineInfo = function(icao) {
     if (icao.length == 3) {
         const aInfo = this.jobMngr.aHandler.getAInfo(icao);
         if (aInfo) {
-            let src;
+            let src, css;
             if (this.jobMngr.aHandler.hasAIcon(aInfo.icao)) {
-                src = `https://www.flightaware.com/images/airline_logos/24px/${icao}.png`;
+                src = `${githubRepo}/randomJobs/com.png`;
+                css = 'airline-icon icao-'+icao;
             } else {
                 src = `${githubRepo}/randomJobs/airline.png`;
             }
-            this.airlineInfoDom.innerHTML = createTag('img', {src}).outerHTML + aInfo.name;
+            this.airlineInfoDom.innerHTML = createTag('img', {src, class:css}).outerHTML + aInfo.name;
         }
     } else if (icao.length == 1) {
         this.airlineInfoDom.innerHTML = createTag('img', {src:`${githubRepo}/randomJobs/regional.png`}).outerHTML;
@@ -276,13 +299,16 @@ FlightplanPage.prototype.refreshDisplays = function() {
         _displayKeys.forEach(k => {
             dDom[k].value = '';
         });
-        this.flightStatusDom.innerHTML = '';
         dDom.arrvtimeActualLabel.nodeValue = 'Actual Arr';
         dDom.delayLabel.nodeValue = 'On Time';
         dDom.durationLabel.nodeValue = 'Duration';
         return;
     }
-    this.flightStatusDom.innerHTML = flight.status.replace(STATUS.AIRBORNE,'flight').toLocaleUpperCase();
+    if (flight.finished)
+        this.flightStatusDom.innerHTML = flight.finished.toLocaleUpperCase();
+    else if (flight.status != STATUS.ARRIVAL)
+        this.flightStatusDom.innerHTML = flight.status.replace(STATUS.AIRBORNE,'in flight').toLocaleUpperCase();
+
     if (!flight.times)
         return;
 
@@ -293,11 +319,10 @@ FlightplanPage.prototype.refreshDisplays = function() {
         dDom.delayLabel.nodeValue = flight.delay < 0 ? 'Early' : (flight.delay > 900 ? 'Delay' : 'On Time');
     }
 
-    const duration = flight.times.end ? flight.times.end-flight.times.start :
-                   (flight.times.landing||now())-(flight.times.takeoff||flight.times.start);
+    const duration = (flight.airborneTime||0) + (flight.groundTime||0);
     dDom.duration.value = [zeroPad(Math.floor(duration/3600)), zeroPad(Math.floor(duration/60)%60)].join(':');
     dDom.durationLabel.nodeValue = flight.times.end || !flight.times.takeoff ? 'Duration' : 'Duration (air)';
-    const avgSpeed = flight.traveled > 1e3 && duration>60 ? flight.traveled / duration : 0;
+    const avgSpeed = flight.traveled > 1e3 && (flight.airborneTime||0)>60 ? flight.traveled / flight.airborneTime : 0;
     dDom.speedAvg.value = Math.round(convert.mpsToKts(avgSpeed)) || '';
 
     if (flight.times.start) {
@@ -311,9 +336,13 @@ FlightplanPage.prototype.refreshDisplays = function() {
 
     } else if (flight.status == STATUS.AIRBORNE && this.jobMngr.flight.getAvgAirspeed()) {
         const estTime = Math.max(0,Math.round((flight.dist-flight.traveled)/this.jobMngr.flight.getAvgAirspeed()));
-        const taxiTime = flight.times.takeoff  ? flight.times.takeoff - flight.times.start : 0;
+        const taxiTime = flight.times.takeoff && flight.times.start ? flight.times.takeoff - flight.times.start : 0;
         const estDate = new Date((now() + estTime + taxiTime)*1000);
-        dDom.arrvtimeActual.value = humanTime(estDate);
+        if (estDate) {
+            dDom.arrvtimeActual.value = (new Date()).getDay()!=estDate.getDay() ? '+' : '' ;
+            dDom.arrvtimeActual.value += [zeroPad(estDate.getHours()),zeroPad(estDate.getMinutes())].join(':');
+        } else
+            dDom.arrvtimeActual.value = '';
         dDom.arrvtimeActualLabel.nodeValue = 'Estimated Arr';
     }
 };
