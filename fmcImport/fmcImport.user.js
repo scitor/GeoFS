@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GeoFS - FMC import & tweaks
-// @version      0.3.4
+// @version      0.3.5
 // @description  Enables the new GeoFS 3.8 FMC to read old FMC routes and import from SimBrief
 // @author       TurboMaximus
 // @match        https://*/geofs.php*
@@ -37,18 +37,30 @@
         if (!localStorage.simbriefUsername || localStorage.simbriefUsername == 'null')
             return delete localStorage.simbriefUsername;
         let i=0;
+        const last = {alt:'',spd:''};
         fetch('https://www.simbrief.com/api/xml.fetcher.php?json=1&username='+localStorage.simbriefUsername)
             .then(data => data.ok && data.json())
             .then(json => {
                 if (!json || !json.navlog) return delete localStorage.simbriefUsername;
-                geofs.flightPlan.waypointArray = json.navlog.fix.map(entry => ({
-                    ident:entry.ident,
-                    lat:parseFloat(entry.pos_lat+''+i++),
-                    lon:parseFloat(entry.pos_long+''+i++),
-                    alt:parseInt(entry.altitude_feet),
-                    spd:parseInt(entry.altitude_feet)>26e3 ? 'M'+entry.mach : parseInt(entry.ind_airspeed),
-                    type:"FIX"
-                }));
+                geofs.flightPlan.waypointArray = json.navlog.fix.map(entry => {
+                    const ret = {
+                        ident:entry.ident,
+                        lat:parseFloat(entry.pos_lat+''+i++),
+                        lon:parseFloat(entry.pos_long+''+i++),
+                        alt:'',
+                        spd:'',
+                        type:"FIX"
+                    };
+                    const alt = parseInt(entry.altitude_feet);
+                    if (alt !== last.alt) {
+                        last.alt = ret.alt = alt;
+                    }
+                    const spd = parseInt(entry.altitude_feet)>26e3 ? 'M'+entry.mach : parseInt(entry.ind_airspeed);
+                    if (spd !== last.spd) {
+                        last.spd = ret.spd = spd;
+                    }
+                    return ret;
+                });
                 geofs.flightPlan.refreshWaypoints();
             }
         );
